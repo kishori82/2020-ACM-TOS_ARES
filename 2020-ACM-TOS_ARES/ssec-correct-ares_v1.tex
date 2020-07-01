@@ -1,0 +1,57 @@
+The correctness of \ares{} highly depends on the way the configuration 
+sequence is constructed at each client process. Let $\cvec{p}{\state}$ 
+denote the configuration sequence $cseq$ at process $p$ in a state $\state$ and 
+$\mu(\cvec{\pr}{\state})$ the index of the last finalized configuration in $\cvec{p}{\state}$. 
+Then the following properties are preserved by the reconfiguration service:
+
+\begin{theorem}
+	Let $\op_1$ and $\op_2$ two 
+	%read/write/install operations 
+	completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+	respectively, such that $\op_1\bef\op_2$ in an execution $\EX$. 
+	Let $\state_1$ the state after the response 
+	step of $\op_1$ and $\state_2$ the state after the response step 
+	%after the completion of $\op_1$ and $\state_2$ the state after the termination of the first $\act{read-config}$ 
+	of $\op_2$.
+	%$\cvec{\pr_1}{\state_1}$ and $\cvec{\pr_2}{\state_2}$ at two states $\state_1$ and $\state_2$ 
+	%in an execution $\EX$ of the algorithm  such that $\state_1$ appears before $\state_2$ in $\EX$. 
+	Then the following properties hold: 
+	%\begin{enumerate}
+		%\item [$(a)$] 
+		$(a)$ \textbf{Configuration Consistency}: 
+		$\cvec{\pr_2}{\state_2}[i].cfg = \cvec{\pr_1}{\state_1}[i].cfg$,  for $ 1 \leq i \leq |\cvec{\pr_1}{\state_1}|$,
+		%\item [$(b)$]
+		$(b)$  
+		\textbf{Seq. Prefix}: $\cvec{\pr_1}{\state_1}  \preceq_p \cvec{\pr_2}{\state_2}$, and
+		%\item [$(c)$] 
+		$(c)$  
+		\textbf{Seq. Progress}: $\mu(\cvec{\pr_1}{\state_1}) \leq \mu(\cvec{\pr_2}{\state_2})$
+		%; and 
+		%\item [$(d)$]  
+		%\nn{????$(d)$  $\cvec{\pr_2}{\state_2}[i]   = \cvec{\pr_1}{\state_1}[i]$,  for  $ 1 \leq i \leq \mu(\cvec{\pr_1}{\state_1})$????} 
+	%\end{enumerate}
+\end{theorem}
+
+Given the properties satisfied by the reconfiguration algorithm of \ares{} 
+and assuming that the DAP used satisfy Property~\ref{property:dap}, as presented
+in Section \ref{ssec:dap}, then  we have the following result. 
+
+\begin{theorem}[Atomicity]
+	In  any execution $\EX$ of \ares{}, if in every configuration $c\in\gseq$,
+	$\dagetdata{c}$, $\daputdata{c}{}$, and $\dagettag{c}$
+	 %the DAP primitives  
+	 satisfy Property~\ref{property:dap}, then ~\ares{} satisfy atomicity.
+	%, given that the 
+	%$\act{get-data}$, $\act{get-tag}$, and $\act{put-data}$ primitives used satisfy properties
+	%\textbf{C1} and \textbf{C2} of Definition \ref{def:consistency}.
+\end{theorem}
+
+%In  \ares{},  each configuration 
+%may implement the DAPs in a different way as stated below:
+
+\begin{remark}
+	Algorithm \ares{} satisfies atomicity even when the implementaton of the  DAPs in two 
+	different configurations $c_1$ and $c_2$ are not the same, given that the $c_i.\act{get-tag}$,
+	$c_i.\act{get-data}$, and the $c_i.\act{put-data}$ primitives 
+	in each $c_i$ satisfy Property~\ref{property:dap}.  
+\end{remark}

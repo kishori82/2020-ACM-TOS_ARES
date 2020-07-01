@@ -1,0 +1,323 @@
+
+			In this section, we present an implementation of the DAPs,  that satisfies the properties in Property~\ref{property:dap},  for a configuration $c$,  with $n$ servers 
+			 using a $[n, k]$ MDS coding scheme for storage. We implement an instance of the algorithm in a 
+			%Atomicity is always guaranteed. 
+ configuration of  $n$ server processes. 
+ We store each coded element $c_i$, corresponding to an object  at server $s_i$, where $i=1, \cdots, n$.
+			% However, liveness is  guaranteed under the assumption that the number of write operations concurrent with a read  operation is at most $\delta$. The precise definition of concurrency depends on the algorithm itself, and appears later in this section. The \treas{}~algorithm has significantly reduced storage and communication cost, compared to replication, when $\delta$ is limited.
+			%
+%
+%Expressing an atomic algorithm in terms of the DAP primitives serves multiple purposes.
+%First, describing an algorithm according to template algorithm $A_1$  allows one to proof
+%that the algorithm is \textit{safe} (atomic) 
+%% it enables ease of reasoning about the safety of the algorithm  
+%% given that atomicity holds if 
+%by just showing that the appropriate DAP properties hold, and the algorithm is \textit{live} if the 
+%implementation of each primitive is live. 
+%Secondly, the safety and liveness proofs for more complex algorithms (like \ares{} in Section \ref{sec:ares}) % algorithm  
+%become easier as one may reason on the DAP properties that are satisfied by the primitives used,
+%without involving the underlying implementation of those primitives. 
+%Moreover, describing a reconfiguration algorithm using DAPs, provides the flexibility 
+%to vary the  implementations DAPs from configuration to configuration, as long as the DAPs satisfy certain  properties. 
+%%
+%%is easier where  complex operations like reconfiguration is done, where the implementation of data-access primitives can vary from one configuration to another,  while
+%%hiding the details of the underlying atomic algorithm implementation. 
+%%
+%%
+%%As we show 
+%%In Section \ref{sec:algorithm}, we discuss how \ares{} may change the primitives mechanisms
+%%such data access primitives allows us to design 
+%%a reconfigurable atomic storage service that can utilize different atomic implementation 
+%%in each established configuration without affecting the safety guarantees of the service.
+%%Such approaches can adapt to the configuration design, and vary the performance of the service
+%%based on the environmental conditions.
+%% In other words, ABD \cite{ABD96} can be used for 
+%%maximum fault tolerance and when majority quorums are used, whereas fast algorithms 
+%%similar to the ones presented in \cite{CDGL04, FNP15}, could be used in configurations 
+%%that satisfy the appropriate participation bounds. 
+%
+%
+ The implementations of DAP primitives used in \ares{} are shown  
+%\nnrev{by implementing the}{the} 
+%DAP primitives \nnrev{as}{are implemented} 
+in Alg.~\ref{fig:casopt}, and the servers' responses in Alg.~\ref{fig:casopt:server}.
+%At a high level, both the read and write operations take two phases to complete (similar to the ABD algorithm).
+	%, and each consists of two phases. 
+	%As in algorithm $A_1$, a write operation  
+%$\pi$,  \nnrev{ the writer  selects}{discovers} the maximum tag $t^*$ from
+% a quorum in $\quorums{c}$ by executing $\dagettag{c}$;  creates  a new tag $t_w = tag(\pi) =  (t^*.z + 1, w)$ by 
+ %incorporating the writer's own ID; and 
+%it performs a $c.\act{put-data}(\tup{t_w, v})$ to propagate that pair to a quorum in $c$.
+%A read operation performs $\dagetdata{c}$ to retrieve a tag-value pair, $\tup{\tg{},v}$ form configuration $c$, and then 
+%it performs a $c.\act{put-data}(\tup{\tg{},v})$ to propagate that pair to the servers $\servers{c}$. 
+
+%A write operation is similar to the read but before 
+%performing the $\act{put-data}$ action it generates a new tag which associates with the value to be written. 
+%
+
+%\begin{algorithm}[!ht]
+%		\begin{algorithmic}[2]
+%			\begin{multicols}{2}
+%				{\footnotesize
+%					%\Part{Generic Algorithm $A_1$}
+%					\Operation{read}{} 
+%					%\State $wCounter\gets wCounter+1$
+%					\State $\tup{t, v} \gets \dagetdata{c}$
+%					\State $\daputdata{c}{ \tup{t,v}}$
+%					\State return $ \tup{t,v}$
+%					\EndOperation
+%					\Statex
+%					\Operation{write}{$v$} 
+%					%\State $wCounter\gets wCounter+1$
+%					\State $t \gets \dagettag{c}$
+%					\State $t_w \gets \tup{t.z + 1,  w}$
+%					\State $\daputdata{c}{\tup{t_w,v}}$
+%					\EndOperation
+%					%\EndPart
+%				}
+%			\end{multicols}
+%			\end{algorithmic}
+%		\caption{Read and write operations of algorithm template $A_1$}
+%		\label{algo:atomicity:generic1}
+%		\vspace{-1em}
+%	\end{algorithm}
+%		\newcommand{\algrule}[1][.2pt]{\par\vskip.5\baselineskip\hrule height #1\par\vskip.5\baselineskip}	
+			\begin{algorithm*}[!ht]
+				\begin{algorithmic}[2]
+					{\small
+					\begin{multicols}{2}
+							\State{ at each process $\pr_i\in\idSet$}
+							%\remove{
+%										{\scriptsize
+%				%\Part{Generic Algorithm $A_1$}
+%				\Operation{read}{} 
+%				%\State $wCounter\gets wCounter+1$
+%				\State $\tup{t, v} \gets \dagetdata{c}$
+%				\State $\daputdata{c}{ \tup{t,v}}$
+%				\State return $ \tup{t,v}$
+%				\EndOperation
+%				\Statex
+%				\Operation{write}{$v$} 
+%				%\State $wCounter\gets wCounter+1$
+%				\State $t \gets \dagettag{c}$
+%				\State $t_w \gets inc(t)$
+%				\State $\daputdata{c}{\tup{t_w,v}}$
+%				\EndOperation
+%				%\EndPart
+%			}%}
+	
+							\Statex
+							\Procedure{c.get-tag}{}
+							%	\State {\bf send} $(\text{\act{query}},\rdr)$ to every server $s\in \bigcup_{cseq[i]}members(\qs_{cseq[i].conf})$
+							\State {\bf send} $(\text{{\sc query-tag}})$ to each  $s\in \servers{c}$
+							\State {\bf until}   $\pr_i$ receives $\tup{t_s,e_s}$ from $\left\lceil \frac{n + k}{2}\right\rceil$ servers in $\servers{c}$
+							\State $t_{max} \gets \max(\{t_s : \text{ received } \tup{t_s,v_s} \text{ from } s \})$
+							\State {\bf return} $t_{max}$
+							\EndProcedure
+							
+							\Statex
+							
+							\Procedure{c.get-data}{}
+							%	\State {\bf send} $(\text{{\sc query}},\rdr)$ to every server $s\in \bigcup_{cseq[i]}members(\qs_{cseq[i].conf})$
+								\State {\bf send} $(\text{{\sc query-list}})$ to each  $s\in \servers{c}$
+								\State {\bf until}    $\pr_i$ receives $List_s$ from each server $s\in\srvSet_g$ s.t. $|\srvSet_g|=\left\lceil \frac{n + k}{2}\right\rceil$ and  $\srvSet_g\subset \servers{c}$ 
+								\State  $Tags_{*}^{\geq k} = $ set of tags that appears in  $k$ lists	\label{line:getdata:max:begin}
+								\State  $Tags_{dec}^{\geq k} =$ set of tags that appears in $k$ lists with values
+								\State  $t_{max}^{*} \leftarrow \max Tags_{*}^{\geq k} $
+                                \State  $t_{max}^{dec} \leftarrow \max Tags_{dec}^{\geq k} $ \label{line:getdata:max:end}
+								\If{ $t_{max}^{dec} =  t_{max}^{*}$} 
+								    \State  $v \leftarrow $ decode value for $t_{max}^{dec}$
+								\EndIf
+								%\State $List_M \triangleq \bigcup_{s \in \srvSet_g}  List_s$
+								%$\State  $\forall t$, $List_M(t) \triangleq \{ (t, v): (t,v) \in List_M \}$  
+								%\State $\forall t$, $T(t') \triangleq \{t: (t,v) \in List_M(t) \wedge t \geq t' \}$
+								%\State $t_r \gets \max \{t : (t, *) \in List_M ~\wedge |List_M(t)| \geq k~\wedge |T(t)| \leq \delta \}$
+								%\State $v_s\gets \text{decode from }  List_M(t_{r}))$
+								\State {\bf return} $\tup{t^{dec}_{max},v}$
+							\EndProcedure
+							
+							\Statex				
+							
+							\Procedure{c.put-data}{$\tup{\tg{},v})$}
+								\State $\Coded = [(\tg{}, e_1), \ldots, (\tg{}, e_n)]$, $e_i = \Phi_i(v)$
+								\State {\bf send} $(\text{{\sc write}}, \tup{\tg{},e_i})$ to each $s_i \in \servers{c}$
+								\State {\bf until} $\pr_i$ receives {\sc ack} from $\left\lceil \frac{n + k}{2}\right\rceil$ servers in $\servers{c}$
+							\EndProcedure
+							%\EndPart
+							
+							
+							
+%							\Part{write($v$)}\EndPart
+%							\Part{\underline{\GetTag}} {
+%								\State  Send  $(\QueryTag)$ to all servers $\mathcal{S}$.
+%								\State  Await responses from majority
+%								\State  Select the max tag  $t^*$
+%							}\EndPart
+%							\Statex
+%							\Part{\underline{\PutData}} {
+%								\State $t_w = (t^{*}.z + 1, w)$.  
+%								\State $\Coded = [(t_w, c_1), \ldots, (t_w, c_n)]$, $c_i = \Phi_i(v)$
+%								\State Send  $(\CodedElementTag, \Coded)$ to all servers $\mathcal{S}$.
+%								\State Terminate after $\left\lceil \frac{n + k}{2}\right\rceil$ acks
+%							}	\EndPart
+							
+%							\Statex
+%							\Part{read}\EndPart
+%							\Part{\underline{\GetData}} {
+%								\State  Send $(\QueryList)$ to all servers $\mathcal{S}$.
+%								\State  Wait for $\left\lceil \frac{n+k}{2}\right\rceil$ $Lists$ 
+%								\State  Select the max tag, $t_r$, the corresponding value, $v_r$, is decodable using the $Lists$; additionally   $t_r$ is among the highest distinct $\delta$ tags received in any $Lists$.
+%							}\EndPart	
+%							\Statex
+%							\Part{\underline{\PutData}} {
+%								\State $\Coded = [(t_r, c_1), \ldots, (t_r, c_n)]$, $c_i = \Phi_i(v_r)$
+%								\State Send $(\CodedElementTag, \Coded)$ to all servers $\mathcal{S}$.
+%								\State Wait for $\left\lceil \frac{n + k}{2}\right\rceil$ acks
+%								\State Return $v_r$
+%							}	\EndPart
+%							
+%							
+					\end{multicols}
+				}
+				\end{algorithmic}	
+				\caption{DAP implementation 
+					%for  template $A_1$ to implement 
+					for  \ares{}. }
+				\label{fig:casopt}
+				\vspace{-1em}
+			\end{algorithm*}
+		
+
+	\begin{algorithm*}[!ht]
+	\begin{algorithmic}[2]
+		{\small
+		\begin{multicols}{2}
+				\State{at each server $s_i \in \mathcal{S}$ in configuration $c_k$}
+				\Statex
+				\State{\bf State Variables:}%{ 										
+					%\Statex $(t_{loc}, v_{loc}) \in \mathcal{T} \times {\mathcal V}$, initially   $(t_0, v_0)$
+					%\Statex $status \in \{active, repair\}$, initially $active$
+					\Statex $List \subseteq  \mathcal{T} \times \mathcal{C}_s$, initially   $\{(t_0, \Phi_i(v_0))\}$
+				%}\EndPart
+			
+			\Statex
+			\Receive{{\sc query-tag}}{$s_i,c_k$}
+				\State $\tg{max} = \max_{(t,c) \in List}t$
+				\State Send $\tg{max}$ to $q$
+			\EndReceive
+			\Statex
+	
+			
+			\Receive{{\sc query-list}}{$s_i,c_k$}
+				\State Send $List$ to $q$
+			\EndReceive
+\State
+			\Receive{{\sc put-data}, $\tup{\tg{},e_i}$}{$s_i,c_k$}
+				\State $List \gets List \cup \{ \tup{\tg{}, e_i}  \}$ 
+				\If{$|List| > \delta+1$}
+					\State $\tg{min}\gets\min\{t: \tup{t,*}\in List\}$
+				%	\Statex
+                                              \Statex  ~~~~~~~~/* remove the coded value and retain the tag */
+					%\State $List \gets List \backslash~\{\tup{\tg{},e}: \tg{}=\tg{min} ~\wedge~\tup{\tg{},e}\in List\} \cup \{  (  \tg{min}, \bot)  \}$\label{line:server:removemin}
+					\State $List \gets List \backslash~\{\tup{\tg{},e}: \tg{}=\tg{min} ~\wedge \tup{\tg{},e}\in List\}$
+					\State $List \gets List  \cup \{  (  \tg{min}, \bot)  \}$\label{line:server:removemin}
+				\EndIf
+				\State  Send {\sc ack} to $q$
+			\EndReceive
+			
+%				\Statex
+%				\Part {\underline{\GetTagResp,recv $\QueryTag$ from writer $w$}} {
+%					%\If{ $status = active$ }
+%					\State $t^* = \max_{(t,c) \in List}t$
+%					\State Send $t^*$ to $w$
+%					\Statex %\EndIf
+%				}\EndPart
+%				%										\Statex
+%				\Part {\underline{\GetDataResp, recv $\QueryList$ from reader $r$}} {
+%					%\If{ $status = active$ }
+%					\State Send  $List$ to $r$
+%					%\EndIf
+%				}\EndPart
+%				%	
+%				\Statex
+%				\Part{ \underline{\PutDataResp, recv $\CodedElementTag, (t, c_i)$ from $p$ }}{
+%					%\If{$status = active$}
+%					\State $List \leftarrow List \cup \{ (t, c_i)  \}$ 
+%					\If{ $|List| > \delta + 1$ } 
+%					\State  Retain the (tag, coded-element) pairs for the $\delta +1 $ highest tags in $List$, and delete the rest.
+%					\EndIf 
+%					\State  Send ack to $p$.
+%					%\EndIf
+%					
+%				}\EndPart
+				\end{multicols}
+			}
+	\end{algorithmic}	
+	\caption{The response protocols at  any server $s_i \in {\mathcal S}$ in  
+					\ares{} for client requests.}\label{fig:casopt:server}
+					\vspace{-1em}
+\end{algorithm*}		
+ Each server $s_i$ stores one  state variable,  $List$,  which is a set of up to $(\delta + 1)$  (tag, coded-element) pairs. Initially the set at $s_i$ contains a single element, $List = \{ (t_0,  \Phi_i(v_0)\}$.   Below we describe the implementation of the DAPs.
+%
+%				At a high-level, the algorithm (see Fig.~\ref{fig:casopt}) is a natural generalization of the $ABD$ algorithm accounting for the fact that we use MDS codes.
+	
+$\dagettag{c}$: A  client,  during the execution of a  $\dagettag{c}$ primitive, queries all the servers in $\servers{c}$ for the highest tags in their  $Lists$, and awaits responses from $\left\lceil \frac{n+k}{2} \right\rceil$ servers.
+% with $k \geq \frac{2n}{3}$. 
+A server upon receiving the {\sc get-tag} request, 
+responds to the client with the highest tag, as $\tg{max} \equiv \max_{(t,c) \in List}t$. 
+Once the client receives the tags from $\left\lceil \frac{n+k}{2} \right\rceil$ servers,  it selects  the highest  tag $t$ and returns it . 
+							
+ $c.\act{put-data}(\tup{t_w, v})$: During the  execution of the primitive  $c.\act{put-data}(\tup{t_w, v})$,  a client 
+ % computes the coded elements for each of the $n$ servers, and 
+ sends the  pair  $(t_w, \Phi_i(v))$ to each server $s_i\in\servers{c}$.  
+ When a server $s_i$ receives a message $(\text{\sc put-data}, t_w, c_i)$ , it adds the pair in its local $List$, 
+ trims the pairs with the smallest tags exceeding the length $(\delta+1)$ of the $List$ , and replies 
+ with an ack to the client.
+ %
+ %Every time a $(\text{\sc put-data}, t_w, c_i)$  message arrives at a server $s_i$, 
+ %from a writer, 
+ %the pair gets added to the $List$. As the size of the $List$ at each $s_i$ is bounded by $(\delta+1)$, then following an insertion in the $List$, $s_i$ trims the coded-elements associated with the smallest tags. 
+ In particular, $s_i$ replaces the coded-elements of the older tags with $\bot$, and maintains only the coded-elements associated with the 
+ 	$(\delta+1)$ highest tags in the $List$ (see Line Alg.~\ref{fig:casopt:server}:\ref{line:server:removemin}).
+ %which is then garbage collected to keep tag and coded-element pairs of the highest  $(\delta+1)$ tags, and by replacing the coded-elements of the older tags with $\bot$,  a symbol that signifies garbage-collected coded-elements. 
+  The client completes the primitive operation after getting acks from $\left\lceil \frac{n+k}{2} \right\rceil$ servers.
+			
+	$\dagetdata{c}$:	A  client, during the execution of a  $\dagetdata{c}$ primitive, queries all the servers in $\servers{c}$ for their  local variable $List$, and awaits responses from $\left\lceil \frac{n+k}{2} \right\rceil$ servers. Once the client receives $Lists$ from $\left\lceil \frac{n+k}{2} \right\rceil$ servers,  it selects the highest  tag $t$, such that: $(i)$ its corresponding value $v$ is decodable from the coded elements in the lists; and $(ii)$ $t$ is the highest tag seen from the responses of at least $k$ $Lists$ 
+			(see lines Alg.~\ref{fig:casopt}:\ref{line:getdata:max:begin}-\ref{line:getdata:max:end}) and returns the pair $(t, v)$. 
+Note that in the case where anyone of the above conditions is not satisfied the corresponding read operation does not complete.
+% \newpage
+%\begin{theorem} \label{thm:storage_TREAS}
+%	The worst-case total storage cost of \treas{} algorithm is  $(\delta +1 )\frac{n}{k}$.
+%\end{theorem}
+%\proofremove{
+%	\begin{proof}
+%		The maximum number of  (tag, coded-element) pair in the $List$ is $\delta+1$, and the size of each coded element is 
+%		$\frac{1}{k}$ while the tag variable is a metadata and therefore, not counted. So, the total storage cost is $(\delta +1)\frac{n}{k}$.
+%	\end{proof}
+%}
+%
+%We next state  the communication cost for the write and read operations in  \treas{}. Once again, note that we ignore the communication cost arising from exchange of meta-data.
+%
+%\begin{theorem} \label{treas:write_cost}
+%	The communication cost associated with a successful  write operation in \treas{} is at most $\frac{n}{k}$. 
+%\end{theorem}
+%\proofremove{
+%	\begin{proof}
+%		During read operation, in the $\act{get-tag}$ phase the servers responds with their highest tags variables, which are metadata. However, in the $\act{put-data}$ phase, the reader sends each server the  coded elements of size  $\frac{1}{k}$ each, and hence the total cost of communication for this is $\frac{n}{k}$. Therefore, we have the worst case communication cost of a write operation is $ \frac{n}{k}$.
+%	\end{proof}
+%}
+%\begin{theorem} \label{radonc:read_cost}
+%	The communication cost associated with a successful read operation in \treas{} is at most $(\delta +2)\frac{n}{k}$. 
+%\end{theorem}
+%\proofremove{
+%	\begin{proof}
+%		During read operation, in the $\act{get-data}$ phase the servers responds with their $List$ variables and hence each such list 
+%		is of size at most $(\delta +1)\frac{1}{k}$, and then counting all such responses give us $(\delta +1)\frac{n}{k}$.  In the $\act{put-data}$ phase, the reader sends each server the  coded elements of size  $\frac{1}{k}$ each, and hence the total cost of communication for this is $\frac{n}{k}$. Therefore, we have the worst case communication cost of a read operation is 
+%		$(\delta+2) \frac{n}{k}$.
+%	\end{proof}
+%}
+%
+
+\subsection{Safety (Property~\ref{property:dap})  proof of the DAP{s}}
+\label{sec:safety:daps}
+\input{ssec_dap_correct_v1.tex}

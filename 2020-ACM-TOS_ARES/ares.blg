@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d (TeX Live 2015)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ares.aux
+The style file: acm.bst
+Database file #1: biblio.bib
+Database file #2: cadambe-refs.bib
+Warning--to sort, need author or key in intel-isal
+Warning--empty booktitle in CT06
+Warning--empty journal in N08bitcoin
+You've used 44 entries,
+            2253 wiz_defined-function locations,
+            814 strings with 12400 characters,
+and the built_in function-call counts, 17799 in all, are:
+= -- 1715
+> -- 806
+< -- 0
++ -- 335
+- -- 287
+* -- 1311
+:= -- 2677
+add.period$ -- 130
+call.type$ -- 44
+change.case$ -- 273
+chr.to.int$ -- 0
+cite$ -- 47
+duplicate$ -- 773
+empty$ -- 1467
+format.name$ -- 287
+if$ -- 3880
+int.to.chr$ -- 0
+int.to.str$ -- 44
+missing$ -- 44
+newline$ -- 221
+num.names$ -- 88
+pop$ -- 360
+preamble$ -- 1
+purify$ -- 231
+quote$ -- 0
+skip$ -- 550
+stack$ -- 0
+substring$ -- 1119
+swap$ -- 271
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 172
+warning$ -- 3
+while$ -- 167
+width$ -- 46
+write$ -- 450
+(There were 3 warnings)

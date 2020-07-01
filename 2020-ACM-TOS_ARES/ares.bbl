@@ -1,0 +1,279 @@
+\begin{thebibliography}{10}
+
+\bibitem{intel-isal}
+Intel storage acceleration library (open source version).
+\newblock https://goo.gl/zkVl4N.
+
+\bibitem{EC-Store}
+{\sc Abebe, M., Daudjee, K., Glasbergen, B., and Tian, Y.}
+\newblock Ec-store: Bridging the gap between storage and latency in distributed
+  erasure coded systems.
+\newblock In {\em 2018 IEEE 38th International Conference on Distributed
+  Computing Systems (ICDCS)\/} (July 2018), pp.~255--266.
+
+\bibitem{AKMS09}
+{\sc Aguilera, M.~K., Keidar, I., Malkhi, D., and Shraer, A.}
+\newblock Dynamic atomic storage without consensus.
+\newblock In {\em Proceedings of the 28th ACM symposium on Principles of
+  distributed computing (PODC '09)\/} (New York, NY, USA, 2009), ACM,
+  pp.~17--25.
+
+\bibitem{aguileratutorial}
+{\sc Aguilera, M.~K., Keidary, I., Malkhi, D., Martin, J.-P., and Shraery, A.}
+\newblock Reconfiguring replicated atomic storage: A tutorial.
+\newblock {\em Bulletin of the EATCS 102\/} (2010), 84--081.
+
+\bibitem{FNP15}
+{\sc Anta, A.~F., Nicolaou, N., and Popa, A.}
+\newblock Making ``fast'' atomic operations computationally tractable.
+\newblock In {\em International Conference on Principles Of Distributed
+  Systems\/} (2015), OPODIS'15.
+
+\bibitem{ABD96}
+{\sc Attiya, H., Bar-Noy, A., and Dolev, D.}
+\newblock Sharing memory robustly in message passing systems.
+\newblock {\em Journal of the ACM 42(1)\/} (1996), 124--142.
+
+\bibitem{burihabwa2016performance}
+{\sc Burihabwa, D., Felber, P., Mercier, H., and Schiavoni, V.}
+\newblock A performance evaluation of erasure coding libraries for cloud-based
+  data stores.
+\newblock In {\em Distributed Applications and Interoperable Systems\/} (2016),
+  Springer, pp.~160--173.
+
+\bibitem{CT06}
+{\sc Cachin, C., and Tessaro, S.}
+\newblock Optimal resilience for erasure-coded byzantine distributed storage.
+\newblock IEEE Computer Society, pp.~115--124.
+
+\bibitem{CLMM14}
+{\sc Cadambe, V.~R., Lynch, N., M{\'e}dard, M., and Musial, P.}
+\newblock A coded shared atomic memory algorithm for message passing
+  architectures.
+\newblock In {\em Network Computing and Applications (NCA), 2014 IEEE 13th
+  International Symposium on\/} (Aug 2014), pp.~253--260.
+
+\bibitem{CadambeLMM17}
+{\sc Cadambe, V.~R., Lynch, N.~A., M{\'{e}}dard, M., and Musial, P.~M.}
+\newblock A coded shared atomic memory algorithm for message passing
+  architectures.
+\newblock {\em Distributed Computing 30}, 1 (2017), 49--73.
+
+\bibitem{GIZA2017}
+{\sc Chen, Y. L.~C., Mu, S., and Li, J.}
+\newblock Giza: Erasure coding objects across global data centers.
+\newblock In {\em Proceedings of the 2017 USENIX Annual Technical Conference
+  (USENIX ATC ’17)\/} (2017), pp.~539--551.
+
+\bibitem{CGGMS09}
+{\sc Chockler, G., Gilbert, S., Gramoli, V., Musial, P.~M., and Shvartsman,
+  A.~A.}
+\newblock Reconfigurable distributed storage for dynamic networks.
+\newblock {\em Journal of Parallel and Distributed Computing 69}, 1 (2009),
+  100--116.
+
+\bibitem{GD05}
+{\sc Chockler, G., and Malkhi, D.}
+\newblock Active disk paxos with infinitely many processes.
+\newblock {\em Distributed Computing 18}, 1 (2005), 73--84.
+
+\bibitem{DGL08}
+{\sc Dutta, P., Guerraoui, R., and Levy, R.~R.}
+\newblock Optimistic erasure-coded distributed storage.
+\newblock In {\em DISC '08: Proceedings of the 22nd international symposium on
+  Distributed Computing\/} (Berlin, Heidelberg, 2008), Springer-Verlag,
+  pp.~182--196.
+
+\bibitem{CDGL04}
+{\sc Dutta, P., Guerraoui, R., Levy, R.~R., and Chakraborty, A.}
+\newblock How fast can a distributed atomic read be?
+\newblock In {\em Proceedings of the 23rd ACM symposium on Principles of
+  Distributed Computing (PODC)\/} (2004), pp.~236--245.
+
+\bibitem{FL03}
+{\sc Fan, R., and Lynch, N.}
+\newblock Efficient replication of large data objects.
+\newblock In {\em Distributed algorithms\/} (2003), F.~E. Fich, Ed., vol.~2848
+  of {\em Lecture Notes in Computer Science}, pp.~75--91.
+
+\bibitem{FHN16}
+{\sc Fern{\'a}ndez~Anta, A., Hadjistasi, T., and Nicolaou, N.}
+\newblock Computationally light ``multi-speed'' atomic memory.
+\newblock In {\em International Conference on Principles Of Distributed
+  Systems\/} (2016), OPODIS'16.
+
+\bibitem{GM15}
+{\sc Gafni, E., and Malkhi, D.}
+\newblock {Elastic Configuration Maintenance via a Parsimonious Speculating
+  Snapshot Solution}.
+\newblock In {\em International Symposium on Distributed Computing\/} (2015),
+  Springer, pp.~140--153.
+
+\bibitem{GNS08}
+{\sc Georgiou, C., Nicolaou, N.~C., and Shvartsman, A.~A.}
+\newblock On the robustness of (semi) fast quorum-based implementations of
+  atomic shared memory.
+\newblock In {\em DISC '08: Proceedings of the 22nd international symposium on
+  Distributed Computing\/} (Berlin, Heidelberg, 2008), Springer-Verlag,
+  pp.~289--304.
+
+\bibitem{GNS09}
+{\sc Georgiou, C., Nicolaou, N.~C., and Shvartsman, A.~A.}
+\newblock Fault-tolerant semifast implementations of atomic read/write
+  registers.
+\newblock {\em Journal of Parallel and Distributed Computing 69}, 1 (2009),
+  62--79.
+
+\bibitem{G03}
+{\sc Gilbert, S.}
+\newblock {RAMBO II}: Rapidly reconfigurable atomic memory for dynamic
+  networks.
+\newblock Master's thesis, MIT, August 2003.
+
+\bibitem{GLS03}
+{\sc Gilbert, S., Lynch, N., and Shvartsman, A.}
+\newblock {RAMBO II}: Rapidly reconfigurable atomic memory for dynamic
+  networks.
+\newblock In {\em Proceedings of International Conference on Dependable Systems
+  and Networks (DSN)\/} (2003), pp.~259--268.
+
+\bibitem{HW90}
+{\sc Herlihy, M.~P., and Wing, J.~M.}
+\newblock Linearizability: a correctness condition for concurrent objects.
+\newblock {\em ACM Transactions on Programming Languages and Systems 12}, 3
+  (1990), 463--492.
+
+\bibitem{verapless_book}
+{\sc Huffman, W.~C., and Pless, V.}
+\newblock {\em Fundamentals of error-correcting codes}.
+\newblock Cambridge university press, 2003.
+
+\bibitem{LVM15}
+{\sc Jehl, L., Vitenberg, R., and Meling, H.}
+\newblock Smartmerge: A new approach to reconfiguration for atomic storage.
+\newblock In {\em International Symposium on Distributed Computing\/} (2015),
+  Springer, pp.~154--169.
+
+\bibitem{joshi2017efficient}
+{\sc Joshi, G., Soljanin, E., and Wornell, G.}
+\newblock Efficient redundancy techniques for latency reduction in cloud
+  systems.
+\newblock {\em ACM Transactions on Modeling and Performance Evaluation of
+  Computing Systems (TOMPECS) 2}, 2 (2017), 12.
+
+\bibitem{SODA2016}
+{\sc Konwar, K.~M., Prakash, N., Kantor, E., Lynch, N., M{\'e}dard, M., and
+  Schwarzmann, A.~A.}
+\newblock Storage-optimized data-atomic algorithms for handling erasures and
+  errors in distributed storage systems.
+\newblock In {\em 2016 IEEE International Parallel and Distributed Processing
+  Symposium (IPDPS)\/} (May 2016), pp.~720--729.
+
+\bibitem{radon}
+{\sc Konwar, K.~M., Prakash, N., Lynch, N., and M{\'e}dard, M.}
+\newblock Radon: Repairable atomic data object in networks.
+\newblock In {\em The International Conference on Distributed Systems
+  (OPODIS)\/} (2016).
+
+\bibitem{L98}
+{\sc Lamport, L.}
+\newblock The part-time parliament.
+\newblock {\em ACM Transactions on Computer Systems 16}, 2 (1998), 133--169.
+
+\bibitem{Lynch1996}
+{\sc Lynch, N.}
+\newblock {\em Distributed Algorithms}.
+\newblock Morgan Kaufmann Publishers, 1996.
+
+\bibitem{LS02}
+{\sc Lynch, N., and Shvartsman, A.}
+\newblock {RAMBO}: A reconfigurable atomic memory service for dynamic networks.
+\newblock In {\em Proceedings of 16th International Symposium on Distributed
+  Computing (DISC)\/} (2002), pp.~173--190.
+
+\bibitem{LS97}
+{\sc Lynch, N.~A., and Shvartsman, A.~A.}
+\newblock Robust emulation of shared memory using dynamic quorum-acknowledged
+  broadcasts.
+\newblock In {\em Proceedings of Symposium on Fault-Tolerant Computing\/}
+  (1997), pp.~272--281.
+
+\bibitem{N08bitcoin}
+{\sc Nakamoto, S.}
+\newblock Bitcoin: A peer-to-peer electronic cash system.
+
+\bibitem{ARES:Arxiv:2018}
+{\sc Nicolaou, N., Cadambe, V., Konwar, K., Prakash, N., Lynch, N., and
+  M{\'{e}}dard, M.}
+\newblock Ares: Adaptive, reconfigurable, erasure coded, atomic storage.
+\newblock {\em CoRR abs/1805.03727\/} (2018).
+
+\bibitem{Raft}
+{\sc Ongaro, D., and Ousterhout, J.}
+\newblock In search of an understandable consensus algorithm.
+\newblock In {\em Proceedings of the 2014 USENIX Conference on USENIX Annual
+  Technical Conference\/} (Berkeley, CA, USA, 2014), USENIX ATC'14, USENIX
+  Association, pp.~305--320.
+
+\bibitem{EC-Cache}
+{\sc Rashmi, K., Chowdhury, M., Kosaian, J., Stoica, I., and Ramchandran, K.}
+\newblock Ec-cache: Load-balanced, low-latency cluster caching with online
+  erasure coding.
+\newblock In {\em OSDI\/} (2016), pp.~401--417.
+
+\bibitem{SMMK2010}
+{\sc Shraer, A., Martin, J.-P., Malkhi, D., and Keidar, I.}
+\newblock {Data-centric reconfiguration with network-attached disks}.
+\newblock In {\em Proceedings of the 4th Int'l Workshop on Large Scale
+  Distributed Sys. and Middleware (LADIS ’10)\/} (2010), p.~22–26.
+
+\bibitem{spiegelman:DISC:2017}
+{\sc Spiegelman, A., Keidar, I., and Malkhi, D.}
+\newblock {Dynamic Reconfiguration: Abstraction and Optimal Asynchronous
+  Solution}.
+\newblock In {\em 31st International Symposium on Distributed Computing (DISC
+  2017)\/} (2017), vol.~91, pp.~40:1--40:15.
+
+\bibitem{WPS}
+{\sc Wang, S., Huang, J., Qin, X., Cao, Q., and Xie, C.}
+\newblock Wps: A workload-aware placement scheme for erasure-coded in-memory
+  stores.
+\newblock In {\em Networking, Architecture, and Storage (NAS), 2017
+  International Conference on\/} (2017), IEEE, pp.~1--10.
+
+\bibitem{xiang2015multi}
+{\sc Xiang, Y., Lan, T., Aggarwal, V., and Chen, Y.-F.~R.}
+\newblock Multi-tenant latency optimization in erasure-coded storage with
+  differentiated services.
+\newblock In {\em 2015 IEEE 35th International Conference on Distributed
+  Computing Systems (ICDCS)\/} (2015), IEEE, pp.~790--791.
+
+\bibitem{xiang2016joint}
+{\sc Xiang, Y., Lan, T., Aggarwal, V., Chen, Y.-F.~R., Xiang, Y., Lan, T.,
+  Aggarwal, V., and Chen, Y.-F.~R.}
+\newblock Joint latency and cost optimization for erasure-coded data center
+  storage.
+\newblock {\em IEEE/ACM Transactions on Networking (TON) 24}, 4 (2016),
+  2443--2457.
+
+\bibitem{yu2018sp}
+{\sc Yu, Y., Huang, R., Wang, W., Zhang, J., and Letaief, K.~B.}
+\newblock Sp-cache: load-balanced, redundancy-free cluster caching with
+  selective partition.
+\newblock In {\em Proceedings of the International Conference for High
+  Performance Computing, Networking, Storage, and Analysis\/} (2018), IEEE
+  Press, p.~1.
+
+\bibitem{Zhang2016}
+{\sc Zhang, H., Dong, M., and Chen, H.}
+\newblock Efficient and available in-memory kv-store with hybrid erasure coding
+  and replication.
+\newblock In {\em 14th {USENIX} Conference on File and Storage Technologies
+  ({FAST} 16)\/} (Santa Clara, CA, 2016), {USENIX} Association, pp.~167--180.
+
+\bibitem{PARS}
+{\sc Zhou, P., Huang, J., Qin, X., and Xie, C.}
+\newblock Pars: A popularity-aware redundancy scheme for in-memory stores.
+\newblock {\em IEEE Transactions on Computers\/} (2018), 1--1.
+
+\end{thebibliography}

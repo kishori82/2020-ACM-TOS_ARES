@@ -1,0 +1,329 @@
+In this section we analyze the properties that we can achieve through our reconfiguration algorithm. 
+The first lemma shows that any two configuration sequences have the same configuration identifiers
+in the same indexes. 
+
+\begin{lemma}
+\label{lem:consconf}
+	For any reconfigurer $r$ that invokes an $\act{reconfig}(c)$ action in an execution $\EX$ 
+	of the algorithm, If $r$ chooses to install $c$ in index $k$ of its local $r.cseq$ vector, then $r$ invokes 
+	the $Cons[k-1].propose(c)$ instance over configuration $r.cseq[k-1].cfg$.
+\end{lemma}
+
+\begin{proof}
+	It follows directly from the algorithm. 
+\end{proof}
+
+\begin{lemma}
+	\label{lem:server:monotonic}
+	If a server $s$ sets $s.nextC$ to $\tup{c,F}$ at some state $\st$ in an execution $\EX$ 
+	of the algorithm, then $s.nextC = \tup{c,F}$ for any state $\st'$ that appears after $\st$ in 
+	$\EX$.
+\end{lemma}
+
+\begin{proof}
+	Notice that a server $s$ updates the $s.nextC$ variable for some specific configuration $c_k$ 
+	in a state $st$ if: (i) $s$ did not receive any value for $c_k$ before (and thus $nextC=\bot$), or (ii) $s$ 
+	received a tuple $\tup{c,P}$ and before $\st$ received the tuple $\tup{c',F}$. By Observation \ref{obs:consensus}
+	$c=c'$ as $s$ updates the $s.nextC$ of the same configuration $c_k$. Once the tuple becomes equal to 
+	$\tup{c,F}$ then $s$ does not satisfy the update condition for $c_k$, and hence in any state $\st'$ after $\st$
+	it does not change $\tup{c,F}$.
+\end{proof}
+
+\begin{lemma}[Configuration Uniqueness]
+\label{lem:unique}
+
+	%Let $\st_1$ and $\st_2$ be any two states of an execution $\EX$ of the algorithm,
+	%and $\pr, q$ two participating processes. 
+	%be the state after the response action of an operation $\op_1$ from process $p$,
+	%and $\st_2$ be the state after the first $\act{read-config}$ call of an operation $\op_2$ from $q$.
+	For any processes $\pr, q\in \idSet$ and any states $\st_1, \st_2$ in an execution $\EX$, it must hold that 
+	$\config{\cvec{\pr}{\st_1}[i]}=\config{\cvec{q}{\st_2}[i]}$,  $\forall i$ s.t. 
+	$\config{\cvec{\pr}{\st_1}[i]},\config{\cvec{q}{\st_2}[i]}\neq \bot$.
+\end{lemma}
+
+\begin{proof}
+	The lemma holds trivially for $\config{\cvec{\pr}{\st_1}[0]}=\config{\cvec{q}{\st_2}[0]}=c_0$. 
+	So in the rest of the proof we focus in the case where $i > 0$. Let us assume 
+	w.l.o.g. that $\st_1$ appears before $\st_2$ in $\EX$.
+	
+	According to our algorithm a process $\pr$ sets $\pr.cseq[i].cfg$ to a configuration 
+	identifier $c$ in two cases: (i) either it received $c$ as the result of the consensus 
+	instance in configuration $\pr.cseq[i-1].cfg$, or (ii) $\pr$ receives $\config{s.nextC} = c$ from 
+	a server $s\in\servers{\config{\pr.cseq[i-1]}}$. Note here that (i) is possible only 
+	when $\pr$ is a reconfigurer and attempts to install a new configuration. On the 
+	other hand (ii) may be executed by any process in any operation that invokes the 
+	$\act{read-config}$ action. We are going 
+	to proof this lemma by induction on the configuration index. 
+	
+
+	\emph{Base case:} The base case of the lemma is when $i=1$. 
+	Let us first assume that $p$ and $q$ receive $c_p$ and $c_q$, as the result of the consensus instance at $\pr.cseq[0].cfg$
+	and $q.cseq[0].cfg$ respectively. By Lemma \ref{lem:consconf}, since both processes want to install a configuration 
+	in $i=1$, then they have to run $Cons[0]$ instance over the configuration stored in their local $cseq[0].cfg$ variable. 
+	Since $\pr.cseq[0].cfg=q.cseq[0].cfg=c_0$ then 
+	both $Cons[0]$ instances run over the same configuration $c_0$ and according to Observation \ref{obs:consensus}  
+	return the same value, say $c_1$. Hence $c_p=c_q=c_1$ and $\pr.cseq[1].cfg=q.cseq[1].cfg=c_1$.
+	 
+	 Let us examine the case now where $p$ or $q$ 
+	assign a configuration $c$ they received from some server $s\in\servers{c_0}$. According to the
+	algorithm only the configuration that has been decided by the consensus instance on 
+	$c_0$ is propagated to the servers in $\servers{c_0}$. If $c_1$ is the decided configuration, then 
+	$\forall s\in\servers{c_0}$ such that $s.nextC(c_0)\neq\bot$, it holds that $s.nextC(C_0) = \tup{c_1,*}$.
+	So if $p$ or $q$ set $\pr.cseq[1].cfg$ or $q.cseq[1].cfg$ to some received configuration, then 
+	$\pr.cseq[1].cfg = q.cseq[1].cfg = c_1$ in this case as well. 
+	
+     \emph{Hypothesis:} We assume  that 
+	$\cvec{\pr}{\st_1}[k]=\cvec{q}{\st_2}[k]$  for some $k$, $k \geq 1$.
+	
+	%\noindent{\bf Induction Hypothesis:} 
+	\emph{Induction Step:}  We need to show that the lemma holds for $i=k+1$.
+	If both processes retrieve $\config{\pr.cseq[k+1]}$ and $\config{q.cseq[k+1]}$ through consensus, 
+	then both $\pr$ and $q$ run consensus
+	over the previous configuration. Since according to our hypothesis 
+	$\cvec{\pr}{\st_1}[k]=\cvec{q}{\st_2}[k]$ then both process will receive the same
+	decided value, say $c_{k+1}$, and hence $\pr.cseq[k+1].cfg=q.cseq[k+1].cfg=c_{k+1}$. Similar to the base case,
+	a server in $\servers{c_k}$ only receives the configuration $c_{k+1}$ decided by the consensus instance run over $c_k$. 
+	So processes 
+	$\pr$ and $q$ can only receive $c_{k+1}$ from some server in $\servers{c_k}$ 
+	%even if the processes update their $\pr.cseq[k+1].cfg$ or $q.cseq[k+1].cfg$ with a received 
+	%configuration that will be equal to 
+	so they can only assign $\pr.cseq[k+1].cfg=q.cseq[k+1].cfg=c_{k+1}$ at Line \ref{algo:reconfigurer}:\ref{line:readconfig:assign}.
+	That completes the proof. 
+\end{proof}
+
+
+Lemma \ref{lem:unique} showed that any two operations store the same
+configuration in any cell $k$ of their $cseq$ variable. It is not known however 
+if the two processes discover the same number of configuration ids. In the following
+lemmas we will show that if a process learns about a configuration in a cell $k$ 
+then it also learns about all configuration ids for every index $i$, such that $0\leq i\leq k-1$.
+
+\begin{lemma}
+\label{lem:confmonotonic}
+	In any execution $\EX$ of the algorithm , If for any process $\pr\in\idSet$, $\cvec{\pr}{\st}[i]\neq\bot$ in some state $\st$ in $\EX$,
+	then $\cvec{\pr}{\st'}[i]\neq\bot$ in any state $\st'$ that appears after $\st$ in $\EX$. 
+\end{lemma}
+
+\begin{proof}
+	A value is assigned to $\cvec{\pr}{*}[i]$ either after the invocation of a consensus instance, or while executing
+	the $\act{read-config}$ action. Since any configuration proposed for installation cannot be $\bot$ (A\ref{algo:reconfigurer}:\ref{line:install:valid}), 
+	and since there is at least one configuration proposed in the consensus instance (the one from $\pr$), then by the validity of the consensus
+	service the decision will be a configuration $c\neq\bot$. Thus, in this case $\cvec{\pr}{*}[i]$ cannot be $\bot$.
+	Also in the $\act{read-config}$ procedure, $\cvec{\pr}{*}[i]$ is assigned to a value different than $\bot$ according
+	to Line A\ref{algo:reconfigurer}:L\ref{line:readconfig:assign}. Hence, if $\cvec{\pr}{\st}[i]\neq\bot$ at state $\st$ 
+	then it cannot become $\bot$ in any state $\st'$ after $\st$ in execution $\EX$.
+\end{proof}
+
+
+\begin{lemma}
+\label{lem:nogaps}
+	Let $\st_1$ be some state in an execution $\EX$ of the algorithm. Then for any 
+	process $\pr$, if $k = max\{i: \cvec{\pr}{\st_1}[i]\neq \bot\}$, then 
+	$\cvec{\pr}{\st_1}[j]\neq \bot$, for $0\leq j < k$.
+\end{lemma}
+\begin{proof}
+	Let us assume to derive contradiction that there exists $j < k$ such that 
+	$\cvec{\pr}{\st_1}[j]=\bot$ and $\cvec{\pr}{\st_1}[j+1]\neq\bot$.
+	Suppose w.l.o.g. that $j = k-1$ and that $\st_1$ is the state immediately 
+	after the assignment of a value to $\cvec{\pr}{\st_1}[k]$, say $c_k$. 
+	Since $\cvec{\pr}{\st_1}[k]\neq\bot$, then $\pr$ assigned $c_k$ to $\cvec{\pr}{\st_1}[k]$ 
+	in one of the following cases: 
+	(i) $c_k$ was the result of the consensus instance, or
+	(ii) $\pr$ received $c_k$ from a server during a $\act{read-config}$ action.
+	The first case is trivially impossible as according to Lemma \ref{lem:consconf} 
+	$\pr$ decides for $k$ when it runs consensus over configuration $\config{\cvec{\pr}{\st_1}[k-1]}$. 
+	Since this is equal to $\bot$, then we cannot run consensus over a non-existent set of 
+	processes. 	In the second case, $\pr$ assigns $\cvec{\pr}{\st_1}[k] = c_k$  in Line A\ref{algo:parser}:\ref{line:readconfig:assign}.
+	The value $c_k$ was however obtained when $\pr$ invoked $\act{get-next-config}$ on 
+	configuration $\config{\cvec{\pr}{\st_1}[k-1]}$. In that action, $\pr$ sends {\sc read-config}
+	messages to the servers in $\servers{\config{\cvec{\pr}{\st_1}[k-1]}}$ and waits until a quorum 
+	of servers replies. Since we assigned $\cvec{\pr}{\st_1}[k] = c_k$ it means that $\act{get-next-config}$
+	terminated at some state $\st'$ before $\st_1$ in $\EX$, and thus: 
+	(a) a quorum of servers in $\servers{\config{\cvec{\pr}{\st'}[k-1]}}$
+	replied, and (b) there exists a server $s$ among those that replied with $c_k$. 
+	According to our assumption however, $\cvec{\pr}{\st_1}[k-1] = \bot$ at $\st_1$. 
+	So if state $\st'$ is before $\st_1$ in $\EX$, %is the state after the response step of $\act{get-next-config}$, 
+	then by Lemma \ref{lem:confmonotonic}, it follows that $\cvec{\pr}{\st'}[k-1] = \bot$. This however 
+	implies that $\pr$ communicated with an empty configuration, and thus no server replied to $\pr$. 
+	This however contradicts the assumption that a server replied with $c_k$ to $\pr$. 
+	
+	Since any process traverses the configuration sequence starting from the initial 
+	configuration $c_0$, then with a simple induction we can show that 
+	$\cvec{\pr}{\st_1}[j]\neq \bot$, for $0\leq j\leq k$.
+\end{proof}
+
+We can now move to an important lemma that shows that any \act{read-config} action 
+returns an extension of the configuration sequence returned by any previous \act{read-config} action. 
+First, we show that the last finalized configuration observed by any \act{read-config} action is at least as 
+recent as the finalized configuration observed by any subsequent \act{read-config} action. 
+%Using this lemma we will then show that when 
+
+\begin{lemma}
+	\label{lem:config:propagation}
+	If at a state $\st$ of an execution $\EX$ of the algorithm, if $\mu(\cvec{\pr}{\st}) = k$ % = \max\{i: \cvec{\pr}{\st}[i]\neq\bot\}$
+	for some process $\pr$, then for any element $0\leq j < k$, $\exists Q\in \quorums{\config{\cvec{\pr}{\st}[j]}}$
+	such that $\forall s\in Q, s.nextC(\config{\cvec{\pr}{\st}[j]})= \cvec{\pr}{\st}[j+1]$. 
+\end{lemma}
+\begin{proof}
+	This lemma follows directly from the algorithm. Notice that whenever a process assigns a value to 
+	an element of its local configuration (Lines  A\ref{algo:parser}:\ref{line:readconfig:assign} and 
+	A\ref{algo:reconfigurer}:\ref{line:addconfig:assign}), it then propagates this value to a quorum of the 
+	previous configuration (Lines  A\ref{algo:parser}:\ref{line:readconfig:put} and 
+	A\ref{algo:reconfigurer}:\ref{line:addconfig:put}). So if a process $\pr$ assigned $c_j$ to an 
+	element $\cvec{\pr}{\st'}[j]$ in some state $\st'$ in $\EX$, then $\pr$ may assign a value 
+	to the $j+1$ element of $\cvec{\pr}{\st''}[j+1]$ only after $\act{put-config}(\config{\cvec{\pr}{\st'}[j-1]},\cvec{\pr}{\st'}[j])$
+	occurs. During $\act{put-config}$ action, $\pr$ propagates $\cvec{\pr}{\st'}[j]$ in a quorum 
+	$Q\in\quorums{\config{\cvec{\pr}{\st'}[j-1]}}$. Hence, if $\cvec{\pr}{\st}[k]\neq\bot$, then $\pr$ 
+	propagated each $\cvec{\pr}{\st'}[j]$, for $0<j\leq k$ to a quorum of servers $Q\in\quorums{\config{\cvec{\pr}{\st'}[j-1]}}$.
+	And this completes the proof. 
+%	
+%	Let examine a single element $\cvec{\pr}{\st'}[j]$ that is added in the configuration vector at some state $\st'$ 
+%	that appears before $\st$ in $\EX$. Whenever a configuration is assigned a process $\pr$ invokes $\act{put-config}$
+%	action before adding the next configuration. According to this action, the process sends the discovered configuration
+%	and sends it to a quorum of servers. As this process is repeated for every element inserted then the lemma follows. 
+\end{proof}
+
+
+\begin{lemma}[Configuration Prefix]
+	\label{lem:prefix}
+Let $\op_1$ and $\op_2$ two 
+%read/write/install operations 
+completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+respectively, such that $\op_1\bef\op_2$ in an execution $\EX$. Let $\st_1$ be the state after the response 
+step of $\op_1$ and $\st_2$ the state after the response step 
+%termination of the first $\act{read-config}$ 
+of $\op_2$. Then 
+$\cvec{\pr_1}{\st_1}\preceq_p\cvec{\pr_2}{\st_2}$.
+\end{lemma}
+
+\begin{proof}
+	Let $\nu_1 = \nu(\cvec{\pr_1}{\st_1})$ and $\nu_2 = \nu(\cvec{\pr_2}{\st_2})$.
+	By Lemma \ref{lem:unique} for any $i$ such that $\cvec{\pr_1}{\st_1}[i]\neq\bot$ and 
+	$\cvec{\pr_2}{\st_2}[i]\neq\bot$, then $\config{\cvec{\pr_1}{\st_1}[i]}=\config{\cvec{\pr_2}{\st_2}[i]}$.
+	Also from Lemma \ref{lem:nogaps} we know that for $0\leq j\leq \nu_1, \cvec{\pr_1}{\st_1}[j] \neq \bot$, 
+	and $0\leq j\leq \nu_2, \cvec{\pr_2}{\st_2}[j] \neq \bot$. So if we can show that $\nu_1\leq \nu_2$ then the lemma follows. 
+	
+	Let $\mu = \mu(\cvec{\pr_2}{\st'})$ %, or simply $\mu$, 
+	be the last finalized element which $\pr_2$ established in the beginning of 
+	the $\act{read-config}$ action $\op_2$ (Line A\ref{algo:reconfigurer}:\ref{line:readconfig:final}) at some state $\st'$ before $\st_2$. 
+	It is easy to see that $\mu\leq \nu_2$. If $\nu_1 \leq \mu$ then $\nu_1\leq \nu_2$ and 
+	the lemma follows. Thus, it remains
+	to examine the case where $\mu < \nu_1$. Notice that since $\op_1\bef\op_2$ then $\st_1$ appears before 
+	$\st'$ in execution $\EX$. By Lemma \ref{lem:config:propagation}, we know that by $\st_1$, 
+	%in all the configurations $\cvec{\pr_1}{\st_1}[j]$, for $0\leq j < \nu_1$,  
+	$\exists Q\in\quorums{\config{\cvec{\pr_1}{\st_1}[j]}}$, for $0\leq j < \nu_1$,   such that 
+	$\forall s\in Q, s.nextC = \cvec{\pr_1}{\st_1}[j+1]$. Since $\mu < \nu_1$, then it must be the case 
+	that $\exists Q\in \quorums{\config{\cvec{\pr_1}{\st_1}[\mu]}}$ such that $\forall s\in Q, s.nextC = \cvec{\pr_1}{\st_1}[\mu+1]$.
+	But by Lemma \ref{lem:unique}, we know that $\config{\cvec{\pr_1}{\st_1}[\mu]}= \config{\cvec{\pr_2}{\st'}[\mu]}$. 
+	Let $Q'$ be the quorum that replies to the $\act{read-next-config}$ occurred in $\pr_2$, on configuration  $\config{\cvec{\pr_2}{\st'}[\mu]}$.
+	By definition $Q\cap Q'\neq \emptyset$, thus there is a server $s\in Q\cap Q'$ that sends $s.nextC = \cvec{\pr_1}{\st_1}[\mu+1]$
+	to $\pr_2$ during $\op_2$. Since $\cvec{\pr_1}{\st_1}[\mu+1]\neq\bot$ then $\pr_2$ assigns $\cvec{\pr_2}{*}[\mu+1]=\cvec{\pr_1}{\st_1}[\mu+1]$, and 
+	repeats the process in the configuration $\config{\cvec{\pr_2}{*}[\mu+1]}$. Since every configuration $\config{\cvec{\pr_1}{\st_1}[j]}$, 
+		for $\mu\leq j<\nu_1$, has a quorum of servers with $s.nextC$, then by a simple induction it can be shown that the process will 
+		be repeated for at least $\nu_1-\mu$ iterations, and  every configuration
+		$\cvec{\pr_2}{\st''}[j]=\cvec{\pr_1}{\st_1}[j]$, at some state $\st''$ before $\st_2$. 
+		Thus, $\cvec{\pr_2}{\st_2}[j]=\cvec{\pr_1}{\st_1}[j]$, for $0\leq j\leq \nu_1$. Hence $\nu_1\leq\nu_2$ and the lemma follows in this case as well. 
+\end{proof}
+
+Thus far we focused on the configuration member of each element in $cseq$. As operations do get in account
+the \emph{status} of a configuration, i.e. $P$ or $F$, in the next lemma we will examine the relationship of 
+the last finalized configuration as detected by two operations. First we present a lemma that shows the 
+monotonicity of the finalized configurations.
+
+\begin{lemma}
+	\label{lem:final:monotonic}
+	Let $\st$ and $\st'$ two states in an execution $\EX$ such that $\st$ appears before $\st'$ in $\EX$.
+ 	Then for any process $\pr$ must hold that $\mu(\cvec{\pr}{\st})\leq \mu(\cvec{\pr}{\st'})$.  %\red{must refer to a read-config}
+\end{lemma}
+
+\begin{proof}
+	This lemma follows from the fact that if a configuration $k$ is such that 
+	$\status{\cvec{\pr}{\st}[k]}=F$ at a state $\st$, then $\pr$ will start any 
+	future $\act{read-config}$ action from a configuration $\config{\cvec{\pr}{\st'}[j]}$
+	such that $j\geq k$. But $\config{\cvec{\pr}{\st'}[j]}$ is the last finalized configuration 
+	at $\st'$ and hence $\mu(\cvec{\pr}{\st'})\geq \mu(\cvec{\pr}{\st})$.
+\end{proof}
+
+\begin{lemma}  [Configuration Progress]
+	\label{lem:finalconf}
+	Let $\op_1$ and $\op_2$ two 
+	%read/write/install operations 
+	completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+	respectively, such that $\op_1\bef\op_2$ in an execution $\EX$. 
+	Let $\st_1$ be the state after the response 
+	step of $\op_1$ and $\st_2$ the state after the response step 
+	%after the completion of $\op_1$ and $\st_2$ the state after the termination of the first $\act{read-config}$ 
+	of $\op_2$. Then 
+	$\mu(\cvec{\pr_1}{\st_1})\leq\mu(\cvec{\pr_2}{\st_2})$.
+\end{lemma}
+
+\begin{proof}
+	By Lemma \ref{lem:prefix} it follows that $\cvec{\pr_1}{\st_1}$ is a prefix of $\cvec{\pr_2}{\st_2}$.
+	Thus, if $\nu_1 = \nu(\cvec{\pr_1}{\st_1})$ and $\nu_2 = \nu(\cvec{\pr_2}{\st_2})$, $\nu_1\leq\nu_2$.
+	Let $\mu_1=\mu(\cvec{\pr_1}{\st_1})$, such that $\mu_1\leq\nu_1$, be the last element in $\cvec{\pr_1}{\st_1}$,
+	where $\status{\cvec{\pr_1}{\st_1}[\mu_1]} = F$. Let now $\mu_2=\mu(\cvec{\pr_2}{\st'})$, 
+	be the last element which $\pr_2$ obtained in Line A\ref{algo:parser}:\ref{line:readconfig:final} 
+	during $\op_2$ 
+	%of the  $\act{read-config}$ action 
+	such that $\status{\cvec{\pr_2}{\st'}[\mu_2]} = F$ in some state $\st'$ before $\st_2$. 
+	If $\mu_2\geq\mu_1$, and since $\st_2$ is after $\st'$, then by Lemma \ref{lem:final:monotonic} 
+	$\mu_2\leq \mu(\cvec{\pr_2}{\st_2})$ and hence $\mu_1\leq \mu(\cvec{\pr_2}{\st_2})$ as well. 
+	
+	It remains to examine the case where $\mu_2<\mu_1$. Process  $\pr_1$ 
+	sets the status of $\cvec{\pr_1}{\st_1}[\mu_1]$ to $F$ in two cases: (i) either when finalizing 
+	a reconfiguration, or (ii) when receiving an $s.nextC = \tup{\config{\cvec{\pr_1}{\st_1}[\mu_1]}, F}$ %with status $F$ 
+	from some server $s$ during a $\act{read-config}$ action. In both cases $\pr_1$ propagates the 
+	$\tup{\config{\cvec{\pr_1}{\st_1}[\mu_1]}, F}$ to a quorum of servers in  
+	$\config{\cvec{\pr_1}{\st_1}[\mu_1-1]}$ before completing. We know by Lemma
+	\ref{lem:prefix} that since $\op_1\bef\op_2$ then $\cvec{\pr_1}{\st_1}$ is a prefix 
+	in terms of configurations of the $\cvec{\pr_2}{\st_2}$. So it must be the case 
+	that $\mu_2 < \mu_1 \leq \nu(\cvec{\pr_2}{\st_2})$. Thus, during $\op_2$, %the $\act{read-config}$ action, 
+	$\pr_2$ starts from the configuration at index $\mu_2$ and in some iteration 
+	performs $\act{get-next-config}$ in configuration $\cvec{\pr_2}{\st_2}[\mu_1-1]$. 
+	According to Lemma \ref{lem:unique}, $\config{\cvec{\pr_1}{\st_1}[\mu_1-1]} = \config{\cvec{\pr_2}{\st_2}[\mu_1-1]}$.
+	Since $\op_1$ completed before $\op_2$, then it must be the case that $\st_1$ appears before 
+	$\st'$ in $\EX$. However, $\pr_2$ invokes the $\act{get-next-config}$ operation in a state $\st''$
+	which is either equal to $\st'$ or appears after $\st'$ in $\EX$. Thus, $\st''$ must appear after $\st_1$ in $\EX$.
+	From that it follows that when the $\act{get-next-config}$ is executed by $\pr_2$ there is already 
+	a quorum of servers in $\config{\cvec{\pr_2}{\st_2}[\mu_1-1]}$, say $Q_1$, that received 
+	$\tup{\config{\cvec{\pr_1}{\st_1}[\mu_1]}, F}$from $\pr_1$. 
+	Since, $\pr_2$ waits from replies from a quorum of servers from the same configuration, say $Q_2$, and since the 
+	$nextC$ variable at each server is monotonic (Lemma \ref{lem:server:monotonic}), then there is a server $s\in \quo{1}\cap \quo{2}$, 
+	such that $s$ replies to $\pr_2$ with $s.nextC = \tup{\config{\cvec{\pr_1}{\st_1}[\mu_1]}, F}$. So, 
+	$\cvec{\pr_2}{\st_2}[\mu_1]$ gets $\tup{\config{\cvec{\pr_1}{\st_1}[\mu_1]}, F}$, and 
+	hence $\mu(\cvec{\pr_2}{\st_2})\geq \mu_1$ in this case as well. This completes our proof.
+\end{proof}
+
+\begin{theorem}
+	Let $\op_1$ and $\op_2$ two 
+%read/write/install operations 
+completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+respectively, such that $\op_1\bef\op_2$ in an execution $\EX$. 
+Let $\st_1$ be the state after the response 
+step of $\op_1$ and $\st_2$ the state after the response step 
+%after the completion of $\op_1$ and $\st_2$ the state after the termination of the first $\act{read-config}$ 
+of $\op_2$.
+%$\cvec{\pr_1}{\st_1}$ and $\cvec{\pr_2}{\st_2}$ at two states $\st_1$ and $\st_2$ 
+%in an execution $\EX$ of the algorithm  such that $\st_1$ appears before $\st_2$ in $\EX$. 
+Then the following properties hold: 
+\begin{enumerate}
+\item [$(a)$] 
+$\cvec{\pr_2}{\st_2}[i].cfg = \cvec{\pr_1}{\st_1}[i].cfg$,  for $ 1 \leq i \leq \nu(\cvec{\pr_1}{\st_1})$,
+\item [$(b)$]
+ %$(b)$  
+ $\cvec{\pr_1}{\st_1}  \preceq_p \cvec{\pr_2}{\st_2}$, and
+\item [$(c)$] 
+%$(c)$  
+  $\mu(\cvec{\pr_1}{\st_1}) \leq \mu(\cvec{\pr_2}{\st_2})$
+  %; and 
+%\item [$(d)$]  
+%\nn{????$(d)$  $\cvec{\pr_2}{\st_2}[i]   = \cvec{\pr_1}{\st_1}[i]$,  for  $ 1 \leq i \leq \mu(\cvec{\pr_1}{\st_1})$????} 
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Statements $(a)$, $(b)$ and $(c)$ follow from Lemmas \ref{lem:unique}, \ref{lem:prefix}, and 
+\ref{lem:final:monotonic}.
+%are from  the atomic read-modify-write property of ${\recBox}.\act{add-config}(\cdot)$ 
+%and $(d)$ is due to the recon client.
+\end{proof}

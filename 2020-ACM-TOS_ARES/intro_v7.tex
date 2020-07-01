@@ -262,6 +262,7 @@ To accommodate these various reconfiguration requirements, \ares{} takes a modul
 	}
 			
 		\begin{table*}[!h]
+			{\scriptsize
 			\begin{center}
 				\begin{tabular}{|lP{1cm}P{1cm}cP{1cm}ccc|}
 					\hline
@@ -282,6 +283,7 @@ To accommodate these various reconfiguration requirements, \ares{} takes a modul
 					%\treasmod & 2 & 2 & & No &  & $\frac{1}{ \lceil \frac{k}{\delta +1} \rceil}$ & \\ \hline
 				\end{tabular}
 			\end{center}
+		}
 			\caption{Comparison of \ares{} with previous algorithms emulating atomic Read/Write Memory for replication (Repl.) 
 			and erasure-code based (EC) algorithms.  $\delta$ is the maximum number of concurrent writes with any read during the course of an execution of the algorithm. In practice, $\delta < 4$~\cite{GIZA2017}.
 		%	\red{Should we not add communiation and storage cost? What is the difference between recon and adaptive?}

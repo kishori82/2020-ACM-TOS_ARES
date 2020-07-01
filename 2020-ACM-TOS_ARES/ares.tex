@@ -1,5 +1,7 @@
 %% remember to compile with dvips -t letter for US letter style
 \documentclass[acmsmall]{acmart}
+%\documentclass[10pt, conference, compsocconf]{IEEEtran}
+%\IEEEoverridecommandlockouts
 
 \usepackage{microtype}%if unwanted, comment out or use option "draft"
 
@@ -67,7 +69,7 @@
 \newcommand{\status}[1]{#1.status}
 \newcommand{\config}[1]{#1.cfg}
 %\newcommand{\CASOPT}{{\sc TREAS}} 
-\renewcommand{\baselinestretch}{.95} 
+%\renewcommand{\baselinestretch}{.95} 
 \newcommand{\GetTag}{{ \it{get-tag}}}
 \newcommand{\QueryTag}{\text{\sc{query-tag}}}
 \newcommand{\PutData}{{ \it{put-data}}}
@@ -133,37 +135,38 @@
 
 \title{
 	\ares{}:  Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage 	
+}
+
+
+\author{Nicolas Nicolaou}
+\email{nicolas@algolysis.com}
+\affiliation{Algolysis Ltd, Limassol, Cyprus}
+\author{Viveck Cadambe}
+\email{vxc12@engr.psu.edu}
+\affiliation{EE Department, Penn.  State University, University Park, PA, US}
+\author{N. Prakash} 
+\email{prakashn@mit.edu}
+\author{Kishori M. Konwar}
+\email{kishori@csail.mit.edu}
+\author{Muriel Medard}
+\email{medard@mit.edu}
+\author{Nancy Lynch}
+\email{lynch@csail.mit.edu}
+\affiliation{Massachusetts Institute of Technology, Cambridge MA, USA}
+
 	\thanks{This work was partially funded by the Center for Science of Information NSF Award CCF-0939370, 
-		NSF Award CCF-1461559, AFOSR Contract Number: FA9550-14-1-0403, NSF CCF-1553248 and RPF/POST-DOC/0916/0090.}
-}
-
-
-\author{
-	\IEEEauthorblockN{Nicolas Nicolaou$^1$, Viveck Cadambe$^2$, N. Prakash$^3$, 
-		Kishori M. Konwar$^3$, Muriel Medard$^3$ and Nancy Lynch$^3$}
-	\IEEEauthorblockA{
-		\textit{$^1$Algolysis Ltd. \& KIOS Research and Innovation Center of Excellence, Univ. of Cyprus, 
-			Nicosia, Cyprus}\\
-		\textit{$^2$EE Department} 
-		\textit{Penn.  State University}
-		University Park, PA, US \\
-		\textit{$^3$Department of EECS,}
-		\textit{Massachusetts Institute of Technology, 
-			Cambridge MA, USA} \\
-		nicolasn@cs.ucy.ac.cy, vxc12@engr.psu.edu, prakashn@mit.edu, kishori@csail.mit.edu, medard@mit.edu, lynch@csail.mit.edu}
-}
+	NSF Award CCF-1461559, AFOSR Contract Number: FA9550-14-1-0403, NSF CCF-1553248 and RPF/POST-DOC/0916/0090.}
 
 \begin{document}
 
-\maketitle
-
 \input{abstract_v4.tex}
 
+\maketitle
 
-\begin{IEEEkeywords}
-	atomic storage; erasure codes; fault tolerance;
-\end{IEEEkeywords}
-
+%\begin{IEEEkeywords}
+%	atomic storage; erasure codes; fault tolerance;
+%\end{IEEEkeywords}
+%
 \section{Introduction}
 \label{sec:intro}
 \input{intro_v7.tex}
@@ -172,26 +175,23 @@
 \input{model_v2.tex}
 
 \section{Data Access Primitives}
-\input{dap_v1.tex}\label{ssec:dap}
+\input{sec_daps_v1.tex}\label{ssec:dap}
 
 \section{ \ares{} Protocol}
 \label{sec:ares}
-\input{algorithm_v8.tex}
-
-
-
-%\subsection{\ares{} Correctness}
-%\vspace{-0.25em}
-%\label{sec:correct}
-%\input{correctenss_v3.tex}
-
+\input{sec_ares_algorithm_v1.tex}
 
 \section{Implementation of the DAP{s}}\label{ssec:dap:impl}
-\input{algorithm_atomic_v3.tex}
+\label{sec:dap:ec}
+\input{sec_ares_daps_v1.tex}
 
-\subsection{Atomicity  Property of \ares{}}
+\section{Correctness of \ares{}}
+\label{sec:correct}
+\input{sec_ares_correctness_v1.tex}
+
+\section{Performance Analysis of \ares{}}
 \label{sec:safety:b}
-\input{time_analysis_short_v2.tex}
+\input{sec_performance_analysis_v1.tex}
 
 %\section{\treas: A new two-round erasure-code based algorithm}\label{sec:treas}
 %\input{algorithm_atomic_v3.tex}

@@ -1,0 +1,263 @@
+In this section we provide an analysis of the storage and communication costs of \ares{}, 
+and the latency of read and write operations. 
+
+\subsection{Storage and Communication Costs for \ares{}.}\label{sec:safety:c}
+We now briefly present the storage and communication costs associated with the presented DAPs.
+%{\treas{}  %Due to space limitations the proofs appear in \cite{}.
+Recall that by our assumption, the storage cost counts the size (in bits) of the coded elements 
+%that are locally stored, which are 
+stored in variable  $List$  at each server. We ignore the storage cost due to meta-data.
+For  communication cost we measure the bits sent on the wire between the nodes.
+
+\begin{theorem}\label{treas:performance}
+ The \ares{} algorithm has: (i) storage cost $(\delta +1 )\frac{n}{k}$, (ii) communication 
+cost for each write at most to $\frac{n}{k}$, and (iii) communication 
+cost for each read at most $(\delta +2)\frac{n}{k}$.
+\end{theorem}
+
+\subsection{Latency Analysis for read and writes in \ares{}}\label{sec:safety:d}
+Liveness properties cannot be specified for ~\ares{}, without restricting asynchrony  or the
+rate of arrival of \act{reconfig} operations, or if the consensus protocol never terminates.
+Here,  we provide some conditional performance analysis of the operation, based on 
+%assumptions on the 
+latency bounds on the message \nnrev{delay}{delivery}. %in the network.
+ We assume that local computations take negligible time and the latency of an 
+operation is  due to the delays in the messages exchanged during the execution. 
+%Before proceeding with our 
+%analysis we define an upper and lower communication bounds. 
+We measure delays in \myemph{time units} of some global clock, which is visible only to an external viewer.
+No process has access to the clock.
+Let $\smdelay$ and $\lgdelay$ be the minimum and maximum durations taken by 
+ messages, sent during an execution  of~\ares,  to reach their destinations.
+%denote the minimum message delivery delay 
+%between any two processes in the service; let $\lgdelay$ be the 
+%maximum delivery delay. 
+ Also, let $\opdelay{\op}$ denote the duration 
+ of an operation (or action) $\op$. In the statements that follow, 
+ we consider any execution $\EX$ of \ares, which contains $k$ \act{reconfig} operations.
+ \kmk{For any configuration $c$ in an execution of~\ares{},  we assume that any 
+ 	$\consensus{c}.\act{propose}$ operation, takes at least $\opdelaymin{CN}$ time units.}
+%  in it 
+% and $\smdelay$ and $\lgdelay$ are the minimum and maximum durations taken by 
+%any message sent during an execution to reach its destination.
+% with the above time bounds 
+%for messages transmitted. 
+%%
+%\myparagraph{Notations}
+%Let $\smdelay$ and $\lgdelay$ be the minimum and maximum durations taken by 
+%any message to go from one process to another.
+%denote the minimum message delivery delay 
+%between any two processes in the service; let $\lgdelay$ be the 
+%maximum delivery delay. 
+% Also, let $\opdelay{\op}$ denote the communication  delay of an operation (or action) $\op$. 
+%The latency results are the following. 
+%For the simplicity of our analysis, we assume that any 
+%\act{propose} operation to a consensus instance takes at least   $\opdelaymin{CN}$ time units
+ %and at most $\opdelaymax{CN}$. If $\op$ is any propose operation to a consensus service then 
+%$\opdelaymin{CN} \leq \opdelay{\op} \leq \opdelaymax{CN}$.
+ %time units.
+\remove{
+\begin{lemma}
+\label{lem:opdelays}
+Suppose $\pi$ and $\phi$ are operations of the type \act{put-config}, \act{read-next-config}, respectively, invoked by some non-faulty reconfiguration clients,  then the latency of these operations are bounded as follows: 
+%\begin{itemize}
+	%\item 
+	$(i)$ $2\smdelay\leq \opdelay{\pi}\leq 2\lgdelay$
+	%\item 
+	and 
+	$(ii)$ $2\smdelay\leq \opdelay{\phi}\leq 2\lgdelay$.
+%\end{itemize}
+\end{lemma}
+
+From Lemma \ref{lem:opdelays} we can derive the delay of  a \act{read-config} action.
+\begin{lemma}
+	\label{lem:rcdelay}
+	Let $\phi$ be a $\act{read-config}$ operation invoked by a non-faulty reconfiguration client, 
+	with the input argument and returned values of $\phi$ as  $seq$ and  $seq'$, respectively. 
+	If  $\mu = \mu(seq)$ and $\nu = \nu(seq')$, then 	
+$4\smdelay(\nu-\mu+1)\leq \opdelay{\phi}\leq 4\lgdelay(\nu-\mu+1)$.
+\end{lemma}
+
+From Lemma \ref{lem:rcdelay} it is clear that the latency of a $\act{read-config}$ action 
+is  dependent on the number of configurations installed since the last  finalized configuration known to the 
+ recon client.
+Let $\seqlen = \nu-\mu$ denote the number of newly installed configurations.
+%Now let us examine when a new configuration gets inserted in the configuration 
+%sequence by a \act{reconfig} operation.
+Given the latency of a \act{read-config}, we can compute the minimum amount 
+of time it takes for $k$ configurations to be installed.
+
+\begin{lemma}
+	\label{lem:configdelay}
+	Let $\sigma$ be the last state of a fair execution of \ares{}, $\EX$. 
+	Then $k$ configurations can be installed to $\cvec{}{\sigma}$, in time no less than
+%	\begin{equation}
+	$ \left(\opdelaymin{CN}+6\smdelay\right)k$.
+%	\end{equation}
+	%by the completion of its $\act{add-config}$ action 
+%	in our execution construction.
+\end{lemma}
+}
+\remove{
+ In \ares{} a \act{reconfig} operation has 
+four phases: $(i)$ $\act{read-config}(cseq)$,  reads the latest configuration sequence, 
+$(ii)$ $\text{\act{add-config}}(cseq, c)$,  attempts to add  the new configuration 
+at the end of the global sequence $\mathcal{G}_L$, 
+$(iii)$ $\text{\act{update-config}}(cseq)$,   transfers the knowledge to the added configuration,
+and 
+$(iv)$  $\text{\act{finalize-config}}(cseq)$ finalizes the added configuration. 
+
+%So, a new configuration is appended to the 
+%end of the configuration sequence (and it becomes visible to any operation) during the 
+%\act{add-config} action. 
+ During the execution of \act{add-config} action, the recon client proposes to a consensus 
+service  
+to learn the configuration to accept, and then invokes a \act{put-config} action notify a quorum of servers in the configuration of the  decided configuration. 
+%Any operation that is invoked after the \act{put-config} action 
+%will observed the newly added configuration. 
+
+When multiple reconfiguration operations  are invoked concurrently, each at a separate client, then it is possible 
+that each of the clients  successfully append their  new  configurations to the end of $\mathcal{G}_L$. 
+This is possible when 
+the \act{read-config} action of each \act{reconfig} operation begins  after the completion of  \act{put-config}
+action of another \act{reconfig} operation. 
+}
+
+%Next we 
+The following lemma shows the maximum latency of a read or a write operation, invoked by any non-faulty client. 
+From~\ares{} algorithm,  the latency of a read/write operation depends on the delays of the  DAPs  operations. 
+%influence  the delay of a read and write operation. 
+For our analysis we assume 
+that all $\act{get-data}$, $\act{get-tag}$ and $\act{put-data}$ primitives use 
+two phases of communication.  Each phase consists of a communication between the client and the servers.
+%\kmkremove{Such an assumption is justified by atomic algorithms like ~\treas{} and ABD. }
+
+\begin{lemma}
+	\label{lem:dapdelays}
+Suppose $\pi$,  $\phi$ and $\psi$ are operations of the type \act{put-data}, \act{get-tag} and  \act{get-data}, respectively, invoked by some non-faulty reconfiguration clients,  then the latency of these operations are bounded as follows: 
+	$(i)$ $2\smdelay\leq \opdelay{\pi}\leq 2\lgdelay$; $(ii)$
+	 $2\smdelay\leq \opdelay{\phi}\leq 2\lgdelay$; and $(iii)$
+	  $2\smdelay\leq \opdelay{\psi}\leq 2\lgdelay$.
+\end{lemma}
+%Now we show the delay of a read or a write operation $\op$.
+
+In the following lemma, we {estimate the time taken for a read or a write operation to complete,
+	when it discovers $k$ configurations between its invocation and response steps.
+%
+%show that in a fair execution of ~\ares{} \nnrev{where there are at}{that contains} $k$ reconfiguration 
+%operations, any read or write operation takes at most  $6\lgdelay\left(k+2\right)$.
+ 
+
+\begin{lemma}
+	\label{lem:rwdelay}
+%Consider a execution of ~\ares{} where there are $k$ reconfiguration and a read or a write operation $\pi$ invoked by a non-faulty then   $6\lgdelay(k+1)$.
+Consider any  execution of ~\ares{} where at most  $k$ reconfiguration operations are invoked.
+Let $\sigma_s$ and $\sigma_e$ be the states before the invocation 
+and after the completion step of a read/write operation $\op$,
+in some fair execution $\EX$ of \ares{}. 
+%If $k=\nu(\cvec{\pr}{\sigma_e}) - \mu(\cvec{\pr}{\sigma_s})$, 
+Then we have 
+$\opdelay{\op}\leq 6\lgdelay\left(k+2\right)$ to complete. 
+\end{lemma}
+\proofremove{
+\begin{proof}
+	Let $\state_s$ and $\state_e$ be the states before the invocation 
+	and after the completion step of a read/write operation $\op$ by $\pr$ respectively,
+	in some execution $\EX$ of \ares. 
+	%Then $\op$ takes time at most:
+%	\[
+%		\opdelay{\op}\leq 6\lgdelay\left[\nu(\cvec{\pr}{\state_e}) - \mu(\cvec{\pr}{\state_s})+2\right]
+%	\] 
+	By algorithm examination we can 
+	see that any read/write operation performs the following actions in this order:
+	$(i)$  \act{read-config}, $(ii)$ \act{get-data} (or \act{get-tag}), $(iii)$ \act{put-data},
+	and $(iv)$ \act{read-config}. Let $\state_1$ be the state when the first \act{read-config}, denoted by $\act{read-config}_1$, 
+	action terminates. By Lemma \ref{lem:rcdelay} the action will take time:
+	\[
+		\opdelay{\act{read-config}_1} \leq 4\lgdelay(\nu(\cvec{\pr}{\state_1})-\mu(\cvec{\pr}{\state_s})+1)
+	\]
+	The $\act{get-data}$ action that follows the \act{read-config} (Lines Alg.~\ref{algo:writer}:\ref{line:rw:getdata:start}-\ref{line:rw:getdata:end}) is also executed at most $(\nu(\cvec{\pr}{\state_1})-\mu(\cvec{\pr}{\state_s})+1)$
+	given that no new finalized configuration was discovered by the \act{read-config} action. 
+	Finally, the \act{put-data}  and the second \act{read-config} actions of $\op$ may be invoked at most
+	$(\nu(\cvec{\pr}{\state_e})-\nu(\cvec{\pr}{\state_1})+1)$ times, given that the \act{read-config} action discovers 
+	one new configuration every time it runs. Merging all the outcomes, the total time of $\op$ can be at most:
+	\begin{eqnarray*}
+	\opdelay{\op} & \leq & 4\lgdelay(\nu(\cvec{\pr}{\state_1})-\mu(\cvec{\pr}{\state_s})+1) + 2\lgdelay(\nu(\cvec{\pr}{\state_1})-\mu(\cvec{\pr}{\state_s})+1) + (4\lgdelay+2\lgdelay)(\nu(\cvec{\pr}{\state_e})-\nu(\cvec{\pr}{\state_1})+1) \\
+%	 & \leq & 6\lgdelay\nu(\cvec{\pr}{\state_1})-6\lgdelay\mu(\cvec{\pr}{\state_s})+6\lgdelay\nu(\cvec{\pr}{\state_e})-6\lgdelay\nu(\cvec{\pr}{\state_1})+12\lgdelay \\
+	 & \leq & 6\lgdelay\left[\nu(\cvec{\pr}{\state_e}) - \mu(\cvec{\pr}{\state_s})+2\right] \leq 6D(k+1)
+	\end{eqnarray*}
+where  $\nu(\cvec{\pr}{\state_e}) - \mu(\cvec{\pr}{\state_s})\leq k + 1$ since there there can be at most $k$ new configurations installed. and the result of the lemma follows.
+\end{proof}
+}
+
+It remains now to examine the conditions under which a read/write operation may “catch up” with an infinite number of reconfiguration operations.
+For the sake of a worst case analysis we will assume that reconfiguration operations suffer 
+the minimum delay $d$, whereas read and write operations suffer the maximum
+delay $D$ in each message exchange. Also, we assume that any consensus operation takes the least amount of time to complete $\opdelaymin{CN}$.
+The following theorem is the main result of this section, in which we define the relation between $\opdelaymin{CN}$, $d$ and $D$
+%show that in any fair execution of ~\ares{}, if the  consensus operations are ``slow enough'' then  
+so to guarantee that any read or write issued by a non-faulty client always terminates.
+
+\begin{theorem}
+%Consider a  read or  write operation $\pi$, invoked by a non-faulty client, in a fair and well-formed execution of ~\ares{}. Suppose at the point of invocation of $\pi$ the client has $|cseq| = p$. Then if $\opdelaymin{CN} \geq 6D(p + 2) -5d$ the operation $\pi$ completes.
+ Suppose  $\opdelaymin{CN} \geq 3(6D-\smdelay)$, then  any  read or write operation $\op$ completes in any execution  $\EX$ of 
+\ares{}  for any number of reconfiguration operations in $\EX$.
+%$\smdelay \geq \frac{3\lgdelay}{k}-\frac{\opdelay{CN}}{2(k+2)}$
+\end{theorem}
+
+\remove{
+
+It remains now to examine if a read/write operation may ``catch up'' with any ongoing 
+reconfigurations. 
+For the sake of a worst case analysis we will assume that reconfiguration operations
+may communicate respecting the minimum delay $\smdelay$, whereas read and write 
+operations suffer the maximum delay $\lgdelay$ in each message exchange. We will
+split our analysis into three directions, with respect to the number of configurations 
+installed $k$, and the bound on the minimum delay $\smdelay$:
+$(i)$  $k$ is finite, and $\smdelay$ may be unbounded small; $(ii)$ 
+$k$ is infinite, and $\smdelay$ may be unbounded small;
+$(iii)$  $k$ is infinite, and $\smdelay$ can be bounded.
+
+\myparagraph{$k$ is finite, and $\smdelay$ may be unbounded small.}
+In this case we assume a finite number of installed configurations. Also,
+as the $\smdelay$ is unbounded, it follows that reconfigurations may be 
+installed almost instantaneously. Let us first examine what is the maximum 
+delay bound of a any read/write operation. 
+
+\myparagraph{$k$ is infinite, and $\smdelay$ is bounded.}
+We will compute the bound on $\smdelay$ with respect to the $\lgdelay$ 
+and the number of configurations to be installed $k$ if we want to allow a 
+read/write operation to reach ongoing reconfigurations. 
+
+\begin{lemma} \label{lem:delaybound}
+	A read/write operation $\op$ may terminate in any execution $\EX$ of 
+	\ares{} given that $k$ configurations are installed during $\op$, if
+	$
+	\smdelay \geq \frac{3\lgdelay}{k}-\frac{\opdelaymin{CN}}{2(k+2)}
+	$
+\end{lemma}
+%\proofremove{
+\begin{proof}
+	By Lemma \ref{lem:configdelay}, $k$ configurations may be installed in at least:
+		$\opdelay{k} \geq 4\smdelay\sum_{i=1}^{k}i+ k\left(\opdelaymin{CN}+2\smdelay\right)$.	
+	Also by Lemma \ref{lem:rwdelay}, we know that operation $\op$ takes at most 
+$	\opdelay{\op}\leq 6\lgdelay\left(\nu(\cvec{\pr}{\state_e}) - \mu(\cvec{\pr}{\state_s})+2\right)$.
+	Assuming that $k=\nu(\cvec{\pr}{\state_e}) - \mu(\cvec{\pr}{\state_s})$, the total number of 
+	configurations observed during $\op$, then $\op$ may terminate before a $k+1$ configuration 
+	is added in the configuration sequence if 
+	  $6\lgdelay(k+2) \leq  4\smdelay\sum_{i=1}^{k}i+ k\left(\opdelaymin{CN}+2\smdelay\right)$ then we have
+	  $d \geq \frac{3\lgdelay}{k}-\frac{\opdelaymin{CN}}{2(k+2)}$.
+	And that completes the lemma. 
+\end{proof}
+%}
+}
+
+%\begin{theorem*}{\bf \ref{safety:ares:treas}} (Atomicity)
+%	Algorithm \ares-\treas{} implements a reconfigurable atomic storage service, given that the 
+%	$\act{get-data}$, $\act{get-tag}$, and $\act{put-data}$ primitives used satisfy properties
+%	\textbf{C1} and \textbf{C2} of Definition \ref{def:consistency}.
+%\end{theorem*}
+%
+%\begin{proof}
+%The figure above \ref{fig:reconfig:ares:treas}
+%\end{proof}
