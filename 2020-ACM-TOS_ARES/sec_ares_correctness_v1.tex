@@ -1,27 +1,22 @@
 In this section, we prove that \ares{} correctly implements an atomic, read/write, shared storage service. 
 %We also provide an analysis of its storage and communication costs, and the latency of read and write operations. 
-In particular, we show that \ares{} ensures atomicity iff the DAP implementation in each configuration $c_i$
+The correctness of \ares{} highly depends on the way the configuration 
+sequence is constructed at each client process.
+Also, atomicity is ensured if the DAP implementation in each configuration $c_i$
 %relies on the satisfaction of 
 %hinges on 
 satisfies Property~\ref{property:dap}.
-The correctness of \ares{} highly depends on the way the configuration 
-sequence is constructed at each client process.
-We begin by showing some critical properties preserved by the reconfiguration service proposed in \ares{} in subsection \ref{sec:safety:recon}.
-Given those properties and the fact that the DAP 
-
+Thus, we begin by showing some critical properties preserved by the reconfiguration service proposed in \ares{} in subsection \ref{sec:safety:recon}, and then we proof
+the correctness of \ares{} in subsection \ref{sec:safety:atomic} 
+when those properties hold and the DAPs used in 
+each configuration satisfy Property \ref{property:dap}.
 
 % of the  used in an execution of~\ares{}. 
-Therefore, we start by proving, in subsection~\ref{sec:safety:daps},  that 
-Property~\ref{property:dap} holds for the DAP implementation in Section~\ref{ssec:dap:impl}. 
-Based on this, in subsection ~\ref{sec:safety:b}, we prove the atomicty of \ares{}. Next, in sub-section~\ref{sec:safety:c}, we derive the storage
-and communication costs of read and write operations, and in sub-section ~\ref{sec:safety:d}, we derive the latency
-of reads and writes in terms of the minimum and maximum delays of any point-to-point messages of the 
-underlying network.
 %Due to lack of space proofs are omitted and can be found in the 
 %% of the following Theorem is produced in the 
 %extended version of the paper~\cite{ARES:Arxiv:2018}.	
 
-We proceed by first introducing some definitions and notation, that we will use in the proofs that follow. 
+We proceed by first introducing some definitions and notation, that we use in the proofs that follow. 
 %then by presenting some properties that are satisfied 
 %	by the reconfiguration service in any execution, and then we show that given these properties our algorithm satisfies 
 %	the safety (atomicity) conditions. 
@@ -32,12 +27,15 @@ We proceed by first introducing some definitions and notation, that we will use 
 	any state $\state$ that appears after $\state_f$ in $\EX$. 
 	%refers to the value of $v$ at $s$ at the state just before crashes. In other words, $\atT{s.v}{T}  \triangleq \atT{s.v}{\hat{T}}$, where $\hat{T}$ is the latest point in the execution, such that, $(a)$ $\hat{T} \leq T$ and $(b)$ $s$ is non-faulty.
 
+    We define as the tag of a configuration $c$ the smallest tag among the maximum tags found in each quorum of $c$. This is essentially the smallest tag that an operation may witness when receiving replies from a single quorum in $c$. More formally:
 
 	\begin{definition}[Tag of a configuration]  Let  $c \in \mathcal{C}$ be a configuration, $\state$ be a state in some execution $\EX$ then 
 		we define the tag of $c$ at state $\state$ as  
 		$ \atT{tag(c)}{\state} \triangleq \min_{Q \in \quorums{c}} \max_{s \in Q}~\atT{(s.tag}{\state}).$
 		We  drop the suffix $|_\state$, and simply denote as $tag(c)$,  when the state  is clear from the context.
 	\end{definition}
+	Next we provide the notation to express the configuration sequence witnessed by a process $p$ in a state $\state$ (as $ \atT{\pr.cseq}{\state}$), the last finalized configuration in that sequence
+	(as $\mu(\cvec{\pr}{\state})$), and the length of that sequence (as $\nu(\cvec{\pr}{\state})$). More formally:
 	
 	\begin{definition}
 		Let $\sigma$ be any point in an execution of \ares{} and suppose we use the notation $\cvec{\pr}{\state}$ for $ \atT{\pr.cseq}{\state}$,  i.e., the $cseq$ variable at process $p$ at the state $\state$. %be the value of a configuration sequence vector at a process $\pr$ at some state  $\st$ in an execution $\EX$. 
@@ -46,14 +44,16 @@ We proceed by first introducing some definitions and notation, that we will use 
 		$\cvec{\pr}{\state}$. % that are not equal to $\bot$.  
 	\end{definition}
 	
+	Last, we define the prefix operation on two configuration sequences. 
+	
 	\begin{definition} [Prefix order]
 		Let $\mathbf{x}$ and $\mathbf{y}$ be any two configuration sequences. We say that $\mathbf{x}$ is a prefix of $\mathbf{y}$, denoted by 
 		$\mathbf{x} \preceq_p  \mathbf{y}$, if $\config{\mathbf{x}[j]}=\config{\mathbf{y}[j]}$, for all $j$ such that $\mathbf{x}[j]\neq\bot$.
 	\end{definition}
 
-\subsection{Safety (Property~\ref{property:dap})  proof of the DAP{s}}
-\label{sec:safety:daps}
-\input{ssec_dap_correct_v1.tex}
+% \subsection{Safety (Property~\ref{property:dap})  proof of the DAP{s}}
+% \label{sec:safety:daps}
+% \input{ssec_dap_correct_v1.tex}
 
 \subsection{Reconfiguration Protocol Properties}
 \label{sec:safety:recon}
