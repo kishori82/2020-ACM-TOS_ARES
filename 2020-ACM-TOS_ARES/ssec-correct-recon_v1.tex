@@ -16,15 +16,17 @@ in the same indexes.
 \begin{lemma}
 	\label{lem:server:monotonic}
 	If a server $s$ sets $s.nextC$ to $\tup{c,F}$ at some state $\st$ in an execution $\EX$ 
-	of the algorithm, then $s.nextC = \tup{c,F}$ for any state $\st'$ that appears after $\st$ in 
-	$\EX$.
+	of the algorithm, then $s.nextC = \tup{c,F}$ for any state $\st'$ that appears after $\st$ in $\EX$.
 \end{lemma}
 
 \begin{proof}
-	Notice that a server $s$ updates the $s.nextC$ variable for some specific configuration $c_k$ 
-	in a state $st$ if: (i) $s$ did not receive any value for $c_k$ before (and thus $nextC=\bot$), or (ii) $s$ 
-	received a tuple $\tup{c,P}$ and before $\st$ received the tuple $\tup{c',F}$. By Observation \ref{obs:consensus}
-	$c=c'$ as $s$ updates the $s.nextC$ of the same configuration $c_k$. Once the tuple becomes equal to 
+	Notice that a server $s$ updates its $s.nextC$ variable for some specific configuration $c_k$ in a state $\state$ only when it receives a {\sc write-conf} message. This is either the first {\sc write-conf} message received at $s$ for $c_k$ (and thus $nextC=\bot$), or 
+	$s.nextC = \tup{*,P}$ and the message received contains a tuple $\tup{c,F}$. 
+	%received a tuple $\tup{c,P}$ and before $\st$ received the tuple . 
+% 	A {\sc write-conf} is received at $s$ for a configuration $c_k$, whenever a reconfigurer invokes a $\act{put-config}(c_k,*)$ action.
+% 	By Observation \ref{obs:consensus}
+% 	$c=c'$ as $s$ updates the $s.nextC$ of the same configuration $c_k$. 
+	Once the tuple becomes equal to 
 	$\tup{c,F}$ then $s$ does not satisfy the update condition for $c_k$, and hence in any state $\st'$ after $\st$
 	it does not change $\tup{c,F}$.
 \end{proof}
@@ -61,8 +63,10 @@ in the same indexes.
 	and $q.cseq[0].cfg$ respectively. By Lemma \ref{lem:consconf}, since both processes want to install a configuration 
 	in $i=1$, then they have to run $Cons[0]$ instance over the configuration stored in their local $cseq[0].cfg$ variable. 
 	Since $\pr.cseq[0].cfg=q.cseq[0].cfg=c_0$ then 
-	both $Cons[0]$ instances run over the same configuration $c_0$ and according to Observation \ref{obs:consensus}  
-	return the same value, say $c_1$. Hence $c_p=c_q=c_1$ and $\pr.cseq[1].cfg=q.cseq[1].cfg=c_1$.
+	both $Cons[0]$ instances run over the same configuration $c_0$ and 
+	%according to Observation \ref{obs:consensus}  
+	thus by the aggreement property the have to 
+	decide the same value, say $c_1$. Hence $c_p=c_q=c_1$ and $\pr.cseq[1].cfg=q.cseq[1].cfg=c_1$.
 	 
 	 Let us examine the case now where $p$ or $q$ 
 	assign a configuration $c$ they received from some server $s\in\servers{c_0}$. According to the
@@ -87,7 +91,7 @@ in the same indexes.
 	$\pr$ and $q$ can only receive $c_{k+1}$ from some server in $\servers{c_k}$ 
 	%even if the processes update their $\pr.cseq[k+1].cfg$ or $q.cseq[k+1].cfg$ with a received 
 	%configuration that will be equal to 
-	so they can only assign $\pr.cseq[k+1].cfg=q.cseq[k+1].cfg=c_{k+1}$ at Line \ref{algo:reconfigurer}:\ref{line:readconfig:assign}.
+	so they can only assign $\pr.cseq[k+1].cfg=q.cseq[k+1].cfg=c_{k+1}$ at Line A\ref{algo:reconfigurer}:\ref{line:readconfig:assign}.
 	That completes the proof. 
 \end{proof}
 
@@ -110,7 +114,7 @@ then it also learns about all configuration ids for every index $i$, such that $
 	and since there is at least one configuration proposed in the consensus instance (the one from $\pr$), then by the validity of the consensus
 	service the decision will be a configuration $c\neq\bot$. Thus, in this case $\cvec{\pr}{*}[i]$ cannot be $\bot$.
 	Also in the $\act{read-config}$ procedure, $\cvec{\pr}{*}[i]$ is assigned to a value different than $\bot$ according
-	to Line A\ref{algo:reconfigurer}:L\ref{line:readconfig:assign}. Hence, if $\cvec{\pr}{\st}[i]\neq\bot$ at state $\st$ 
+	to Line A\ref{algo:reconfigurer}:\ref{line:readconfig:assign}. Hence, if $\cvec{\pr}{\st}[i]\neq\bot$ at state $\st$ 
 	then it cannot become $\bot$ in any state $\st'$ after $\st$ in execution $\EX$.
 \end{proof}
 
@@ -124,7 +128,7 @@ then it also learns about all configuration ids for every index $i$, such that $
 \begin{proof}
 	Let us assume to derive contradiction that there exists $j < k$ such that 
 	$\cvec{\pr}{\st_1}[j]=\bot$ and $\cvec{\pr}{\st_1}[j+1]\neq\bot$.
-	Suppose w.l.o.g. that $j = k-1$ and that $\st_1$ is the state immediately 
+	Consider first that $j = k-1$ and that $\st_1$ is the state immediately 
 	after the assignment of a value to $\cvec{\pr}{\st_1}[k]$, say $c_k$. 
 	Since $\cvec{\pr}{\st_1}[k]\neq\bot$, then $\pr$ assigned $c_k$ to $\cvec{\pr}{\st_1}[k]$ 
 	in one of the following cases: 
@@ -148,8 +152,8 @@ then it also learns about all configuration ids for every index $i$, such that $
 	This however contradicts the assumption that a server replied with $c_k$ to $\pr$. 
 	
 	Since any process traverses the configuration sequence starting from the initial 
-	configuration $c_0$, then with a simple induction we can show that 
-	$\cvec{\pr}{\st_1}[j]\neq \bot$, for $0\leq j\leq k$.
+	configuration $c_0$, then with a simple induction and similar reasoning we can show that 
+	$\cvec{\pr}{\st_1}[j]\neq \bot$, for $0\leq j\leq k-1$.
 \end{proof}
 
 We can now move to an important lemma that shows that any \act{read-config} action 
@@ -160,7 +164,7 @@ recent as the finalized configuration observed by any subsequent \act{read-confi
 
 \begin{lemma}
 	\label{lem:config:propagation}
-	If at a state $\st$ of an execution $\EX$ of the algorithm, if $\mu(\cvec{\pr}{\st}) = k$ % = \max\{i: \cvec{\pr}{\st}[i]\neq\bot\}$
+	If at a state $\st$ of an execution $\EX$ of the algorithm $\mu(\cvec{\pr}{\st}) = k$ % = \max\{i: \cvec{\pr}{\st}[i]\neq\bot\}$
 	for some process $\pr$, then for any element $0\leq j < k$, $\exists Q\in \quorums{\config{\cvec{\pr}{\st}[j]}}$
 	such that $\forall s\in Q, s.nextC(\config{\cvec{\pr}{\st}[j]})= \cvec{\pr}{\st}[j+1]$. 
 \end{lemma}
@@ -184,7 +188,7 @@ recent as the finalized configuration observed by any subsequent \act{read-confi
 \end{proof}
 
 
-\begin{lemma}[Configuration Prefix]
+\begin{lemma}[Sequence Prefix]
 	\label{lem:prefix}
 Let $\op_1$ and $\op_2$ two 
 %read/write/install operations 
@@ -244,7 +248,7 @@ monotonicity of the finalized configurations.
 	at $\st'$ and hence $\mu(\cvec{\pr}{\st'})\geq \mu(\cvec{\pr}{\st})$.
 \end{proof}
 
-\begin{lemma}  [Configuration Progress]
+\begin{lemma}  [Sequence Progress]
 	\label{lem:finalconf}
 	Let $\op_1$ and $\op_2$ two 
 	%read/write/install operations 
@@ -294,6 +298,8 @@ monotonicity of the finalized configurations.
 	hence $\mu(\cvec{\pr_2}{\st_2})\geq \mu_1$ in this case as well. This completes our proof.
 \end{proof}
 
+Using the previous Lemmas we can conclude to the main result of this section.
+
 \begin{theorem}
 	Let $\op_1$ and $\op_2$ two 
 %read/write/install operations 
@@ -308,11 +314,12 @@ of $\op_2$.
 Then the following properties hold: 
 \begin{enumerate}
 \item [$(a)$] 
-$\cvec{\pr_2}{\st_2}[i].cfg = \cvec{\pr_1}{\st_1}[i].cfg$,  for $ 1 \leq i \leq \nu(\cvec{\pr_1}{\st_1})$,
+\textbf{Configuration Consistency}: $\cvec{\pr_2}{\st_2}[i].cfg = \cvec{\pr_1}{\st_1}[i].cfg$,  for $ 1 \leq i \leq \nu(\cvec{\pr_1}{\st_1})$,
 \item [$(b)$]
- %$(b)$  
+ \textbf{Sequence Prefix}: 
  $\cvec{\pr_1}{\st_1}  \preceq_p \cvec{\pr_2}{\st_2}$, and
 \item [$(c)$] 
+\textbf{Sequence Progress}:
 %$(c)$  
   $\mu(\cvec{\pr_1}{\st_1}) \leq \mu(\cvec{\pr_2}{\st_2})$
   %; and 
