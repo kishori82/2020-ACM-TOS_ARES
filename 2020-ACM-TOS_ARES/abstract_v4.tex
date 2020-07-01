@@ -1,0 +1,72 @@
+\begin{abstract}
+Emulating a shared \myemph{atomic}, read/write storage system 
+%using a set of distinct, often geographically dispersed processes, 
+is a fundamental problem in distributed computing. Replicating atomic 
+objects among a set of data hosts was the norm for traditional implementations (e.g., \cite{ABD96})
+in order to guarantee the availability and accessibility of the data despite host failures.
+As replication is highly storage demanding, recent approaches suggested the use 
+of erasure-codes to offer the same fault-tolerance while optimizing storage usage at the hosts. 
+Initial works focused on a fix set of data hosts. To guarantee longevity and scalability, 
+a storage service should  be able to dynamically mask hosts failures by allowing new hosts to join, 
+and failed host to be removed without service interruptions. This work presents the first erasure-code 
+based atomic algorithm, called \ares{}, which allows the set of hosts to be modified in the course of 
+an execution. \ares{} is composed of three main components: (i) a \emph{reconfiguration protocol},
+(ii) a \emph{read/write protocol}, and (iii) a set of \emph{data access primitives}. The design of 
+\ares{} is modular and is such to accommodate the usage of various erasure-code parameters on a 
+per-configuration basis. We provide bounds on the latency of read/write operations, and analyze the 
+storage and communication costs of the \ares{} algorithm.  
+%
+%Emulating a shared \myemph{atomic}, read/write storage system using a set of distinct, often geographically dispersed
+%processes, is a fundamental problem in distributed computing. 
+%Atomic read/write object implementations that utilize erasure-codes to reduce the storage and communication,
+%and latency, compared to the traditional replication approaches (e.g., \cite{ABD96}), are very new and few. 
+%Such algorithms are based on the assumption that the collection of storage 
+%servers are static, leaving the dynamic addition and removal of nodes to the adhoc mechanisms.
+% However, to guarantee survivability and 
+%scalability, a storage 
+%service should be able to dynamically mask hosts failures, joins, and removals without service interruptions or manual interventions. 
+%
+%In this work,  we present the first erasure-code based atomic storage algorithm, ~\ares{},  where we allow the collection of storage 
+%servers (called a {\it configuration})  to change in the course of an execution. In \ares{}  the coding-scheme (coding/decoding algorithms and the 
+%dimensions) used for storage can be changed without service interruption. Reconfigurations are proposed by reconfg clients via 
+%a recon request. 
+%\ares{} can tolerate crash failure of  upto one-fourth of the servers in each of the  configurations and any number of  the reader, writer or recon clients.  The communication between any two processes (servers or clients) is carried out via asynchronous reliable communication.  
+%Naturally, this leads to a complex protocol, for which 
+%we prove the safety properties.  We also provide bounds on the latency of read/write operations under assuming that point-to-point messages are delivered within a certain know time interval. 
+
+\remove{
+We begin by presenting 
+%a generic algorithmic structure for atomic storage algorithms using 
+three data access primitives (DAP), (i) \GetTag, (ii) \PutData, and (iii) \GetData,
+that may be used to express a family of timestamp-based atomic storage algorithms in a single
+generic format.  
+%A number of tag-based algorithms can be converted to the proposed form.
+%The primitives can be used to hide 
+%the complexity of the underlying solution while allowing to proof the correctness 
+%in a more systematic way.  
+%We define the properties that
+%DAPs must satisfy in order for the converted algorithms to preserve atomicity. 
+Next we present \ares{}, an algorithm that integrates DAPs to implement
+%that implements 
+a reconfigurable, atomic storage service in the message-passing environment. 
+The usage of DAPs allows \ares{} to be oblivious of the mechanics of the underlying 
+atomic storage algorithm giving \ares{} two main advantages over previous dynamic solutions:
+(i) it can use any 
+%logical timestamp-based  
+atomic storage algorithm 
+%designed for the static environment and able to be 
+expressed with the given DAPs, and (ii) it can be adaptive, namely it can deploy a different algorithm per configuration 
+without affecting correctness. Finally 
+%To demonstrate the use of \ares{}, 
+we propose a implementation for the three DAPs which yields an
+%new, and to our knowledge, the first \myemph{two-round}    
+erasure-code MWMR atomic storage algorithm, termed \treas, where each read/write operation completes in two rounds. 
+% termed \treas, for emulating  multi-writer, multi-reader (MWMR) atomic 
+%objects in a static, asynchronous, message-passing environment. 
+%with  near-optimal communication and storage costs. 
+%\treas{} is expressed using the proposed primitives.  and 
+Those DAP implementations are used within \ares{}, giving rise to the first reconfigurable erasure-coded 
+atomic storage.  
+}
+
+\end{abstract}

@@ -1,0 +1,81 @@
+
+%
+% 
+% This abstraction enables us to prove the safety and liveness properties of such algorithms based on the properties of these primitives. 
+% This abstraction servers us a two-fold 
+% purpose: $(i)$ by expressing several atomicity emulation algorithm in terms of the primitives allows us to prove safety and liveness based on their properties $(iii)$ shows how such algorithms can be adopted to our ARES algorithm and prove their safety and liveness without; and $(iii)$ exposes the intuition that the underlying atomicity algorithm can  be different from configuration to configuration.
+% For version control of the  object values  we use tags.  
+% 
+ 
+ 
+ %Let $<_\tau$ and $\leq_\tau$ be the appropriate comparison relationships used by any algorithm 
+ %that utilizes logical timestamps. Then 
+ %atomicity properties can be expressed in terms of the tags written and returned by write and read 
+ %operations respectively. 
+ %For a write operation $\wrt$ we denote by $\tg{\wrt}$ the tag that is 
+ %used by $\wrt$ and for a read $\rd$ we denote by $\tg{\rd}$ the tag that is returned by $\rd$
+ %\footnote{Note that the values written or returned by write of read operations can be mapped easily  
+ %to the tags they write or return.}.	The partial ordering among the  operations  can then be induced from the partial ordering among the tags. 
+ %using  tags in the following way: (i) for any two write 
+ %operations $\wrt_1$, $\wrt_2$, if  $\wrt_1\prec\wrt_2$, then $\tg{\wrt_1}<_\tau\tg{\wrt_2}$,
+ %(ii) For any operation $\op_1$,  and any read operation $\rd_2$, if $\op_1\prec\rd_2$, then
+ %$\tg{\op_1}\leq_\tau\tg{\rd_2}$.
+
+\proofremove{
+ \begin{proof}
+ We  prove the atomicity by proving properties $P1$, $P2$ and $P3$ appearing in Lemma \ref{XXX} for any execution of the algorithm.
+					
+	\emph{Property $P1$}: Consider two operations $\phi$ and $\pi$ such that $\phi$ completes before $\pi$ is invoked. 
+	We need to show that it cannot be  the case that $\pi \prec \phi$. We break our analysis into the following four cases:
+
+	Case $(a)$: {\em Both $\phi$ and $\pi$ are writes}. The $\daputdata{c}{*}$ of $\phi$ completes before 
+	$\pi$ is invoked. 
+	%which implies that by well-formedness 
+	By property $C1$ the tag $\tg{\pi}$ returned by the $\dagetdata{c}$ at $\pi$ is 
+	at least as large as $\tg{\phi}$. Now, 
+	%since $\tg{\pi}$ is larger than $t_{\phi}$, by the steps of 
+	since $\tg{\pi}$ is incremented by the write operation then $\pi$ puts a tag $\tg{\pi}'$ such that
+	$\tg{\phi} < \tg{\pi}'$ and hence we cannot have $\pi \prec \phi$.
+	
+	Case $(b)$: {\em $\phi$ is a write and  $\pi$ is a read}. In execution $\EX$ since 
+$\daputdata{c} {\tup{t_{\phi}, *}}$ of $\phi$ completes 
+	before the $\dagetdata{c}$ of $\pi$ is invoked, by 
+	%the well-formedness 
+	property $C1$ the tag $\tg{\pi}$ obtained from the above
+	$\dagetdata{c}$ is at least as large as $\tg{\phi}$. Now $\tg{\phi} \leq \tg{\pi}$ implies that we cannot have $\pi \prec \phi$.
+	
+	Case $(c)$: {\em $\phi$ is a read and  $\pi$ is a write}.  Let the id of the writer that invokes $\pi$ we $w_{\pi}$.  
+	The 
+$\daputdata{c}{\tup{\tg{\phi}, *}}$  call of $\phi$ completes
+	before  $\dagettag{c}$ of $\pi$ is initiated. Therefore, by 
+	%the well-formedness 
+	property $C1$ %of data-primitives the above 
+	$\act{get-tag}(c)$ returns $\tg{}$ such that, $\tg{\phi} \leq \tg{}$. Since $\tg{\pi}$ is equal to $(\tg{}.z + 1, w_{\pi})$ 
+	by design of the algorithm, hence $\tg{\pi} > \tg{\phi}$ and we cannot have $\pi \prec \phi$.
+	
+	Case $(d)$: {\em Both $\phi$ and $\pi$ are reads}. In execution $\EX$  
+the $\daputdata{c}{\tup{t_{\phi}, *}}$ is executed as a part of $\phi$ and 
+	completes before $\dagetdata{c}$ is called in $\pi$. By 
+	%the well-formedness
+	 property $C1$ of the data-primitives, 
+	we have $\tg{\phi} \leq \tg{\pi}$ and hence we cannot have $\pi \prec \phi$.
+	
+	\emph{Property $P2$}: Note that because $\tsSet$ is well-ordered we can show that this property by first showing that
+	every write has a unique tag. This means any two pair of writes can be ordered. Now, a read can be ordered . Note that 
+	a read can be ordered w.r.t. to any write operation trivially if the respective tags are different, and by definition, if the 
+	tags are equal the write is ordered before the read.
+	
+	Now observe that two tags generated from two write operations from different writers are necessarily distinct because of the 
+	id component of the tag. Now if the operations, say $\phi$ and $\pi$ are writes  from the same writer then by 
+	well-formedness property the second operation is invoked after the first completes, say without loss of generality $\phi$ completes before 
+	$\pi$ is invoked.   In that case the integer part of the tag of $\pi$ is higher 
+	%because the well-formedness 
+	by property  $C1$, and since the $\dagettag{c}$  is followed by $\daputdata{c}{*}$. Hence $\pi$ is ordered after $\phi$. 
+	
+	\emph{Property $P3$}:  This is clear because the tag of a reader is defined by the tag of the value it returns by property (b).
+	Therefore, the reader's immediate previous value it returns. On the other hand if  does 
+	note return any write operation's value it must return $v_0$.
+ \end{proof}
+}
+
+

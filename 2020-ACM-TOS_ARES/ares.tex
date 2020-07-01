@@ -1,0 +1,224 @@
+%% remember to compile with dvips -t letter for US letter style
+\documentclass[acmsmall]{acmart}
+
+\usepackage{microtype}%if unwanted, comment out or use option "draft"
+
+%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
+
+% the recommended bibstyle
+\usepackage{amssymb,amsmath,multicol,amsthm}
+\usepackage{graphicx,url}
+\usepackage{color,setspace,enumitem}
+\usepackage{epstopdf}
+\usepackage{caption}
+%\usepackage{subcaption}
+\usepackage{times}
+%\usepackage{ulem}
+%\usepackage[left=.9in, right=.9in, top=.9in, bottom=.9in]{geometry}
+\usepackage{array}
+\usepackage{color}
+
+\usepackage[final]{changes}
+
+\usepackage[ruled]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{ioa_code}
+\usepackage{scalerel,stackengine}
+\usepackage[symbol]{footmisc}
+\input{macros}
+\input{nn_macros}
+
+
+\definechangesauthor[name=Nicolas, color=red]{NN}
+\definechangesauthor[name=Viveck, color=green]{VC}
+\definechangesauthor[name=Kishori, color=blue]{KK}
+
+\newcommand{\nnfix}[1]{{\color{black} #1}}
+\newcommand{\myemph}[1]{{\it #1}}
+%\newcommand{\nn}[1]{{\red{#1}}}
+\newcommand{\nn}[1]{\added[id=NN]{#1}}
+%\newcommand{\nnrev}[2]{\sout{}{\blue{#2}}}
+\newcommand{\nnrev}[2]{\replaced[id=NN]{#2}{#1}}
+%\newcommand{\kmk}[1]{{\red{#1}}}
+\newcommand{\kmkrev}[2]{\replaced[id=KK]{#1}{#2}}
+\newcommand{\kmk}[1]{\added[id=KK]{#1}}
+\newcommand{\kmkremove}[1]{{\color{red}[\sout{#1}]}}
+%\renewcommand{\cg}[1]{{\textcolor{blue}{#1}}}
+\newcommand{\vc}[1]{\added[id=VC]{#1}}
+\newtheorem*{theorem*}{{\bf Theorem}}
+\newtheorem*{lemma*}{{\bf Lemma}}
+
+
+  %\newcommand{\myparagraph}[1]{\paragraph*{#1}}
+\newcommand{\myparagraph}[1]{\smallskip\noindent{\textbf{#1}}}
+%Coding Stuff
+\newcommand{\states}[1]{{ {states}(#1)}}
+\newcommand{\startstates}[1]{{ {start}(#1)}}
+\newcommand{\sig}[1]{{ {sig}(#1)}}
+\newcommand{\inactions}[1]{{ {in}(#1)}}
+\newcommand{\outactions}[1]{{ {out}(#1)}}
+\newcommand{\intactions}[1]{{ {int}(#1)}}
+\newcommand{\extactions}[1]{{ {ext}(#1)}}
+\newcommand{\trans}[1]{{ {trans}(#1)}}
+\newcommand{\encode}[3]{{ {encode}_{#1, #2}(#3)}}
+\newcommand{\decode}[3]{{ {decode}_{#1, #2}(#3)}}
+\newcommand{\cvec}[2]{\mathbf{c}^{#1}_{#2}}
+\newcommand{\atT}[2]{#1|_{#2}}
+\newcommand{\status}[1]{#1.status}
+\newcommand{\config}[1]{#1.cfg}
+%\newcommand{\CASOPT}{{\sc TREAS}} 
+\renewcommand{\baselinestretch}{.95} 
+\newcommand{\GetTag}{{ \it{get-tag}}}
+\newcommand{\QueryTag}{\text{\sc{query-tag}}}
+\newcommand{\PutData}{{ \it{put-data}}}
+\newcommand{\PutDataTag}{\text{\sc{put-data}}}
+\newcommand{\GetData}{{ \it{get-data}}}
+\newcommand{\QueryTagData}{\text{\sc{query-tag-data}}}
+\newcommand{\GetTagResp}{{ \it{get-tag-resp}}}
+\newcommand{\GetDataResp}{{ \it{get-data-resp}}}
+\newcommand{\PutDataResp}{{ \it{put-data-resp}}}
+\newcommand{\InitRep}{{ \it{init-repair}}}
+ \newcommand{\RepairTagData}{\text{\sc{repair-tag-data}}}
+\newcommand{\InitRepResp}{{ \it{init-repair-resp}}}
+\newcommand{\CodedElementTag}{\text{\sc{code-elements}}}
+\newcommand{\Coded}{code\act{-}elems}
+\newcommand{\ConfirmDataTag}{\text{\sc{confirm-data}}}
+\newcommand{\QueryList}{\text{\sc{query-list}}}
+\newcommand{\RepairList}{\text{\sc{repair-list}}}
+\newcommand{\optag}[1]{{tag(#1)}}
+\newcommand{\gseq}{{\mathcal{G}_L}}
+
+\newcommand{\smdelay}{d}
+\newcommand{\lgdelay}{D}
+\newcommand{\opdelay}[1]{T(#1)}
+\newcommand{\opdelaymin}[1]{T_{min}(#1)}
+\newcommand{\opdelaymax}[1]{T_{max}(#1)}
+\newcommand{\seqlen}{\lambda}
+\newcommand{\dap}[1]{{DAP(#1)}}
+
+\algblockdefx[Operation]{Operation}{EndOperation}%
+[2]{{\bf operation} $\act{#1}$(#2)}%
+{{\bf end operation}}
+\algblockdefx[Procedure]{Procedure}{EndProcedure}%
+[2]{{\bf procedure} $\act{#1}$(#2)}%
+{{\bf end procedure}}
+\algblockdefx[Receive]{Receive}{EndReceive}%
+[2]{{\bf Upon receive} (#1)$_{\text{ #2 }}${\bf from} $q$}%
+{{\bf end receive}}
+
+
+\newcommand\wwidehat[1]{%
+\savestack{\tmpbox}{\stretchto{%
+  \scaleto{%
+    \scalerel*[\widthof{\ensuremath{#1}}]{\kern-.6pt\bigwedge\kern-.6pt}%
+    {\rule[-\textheight/2]{1ex}{\textheight}}%WIDTH-LIMITED BIG WEDGE
+  }{\textheight}% 
+}{0.5ex}}%
+\stackon[1pt]{#1}{\tmpbox}%
+}
+
+\newcommand{\daputdata}[2]{ {#1}.{\act{put-data}(#2)}}
+\newcommand{\dagetdata}[1]{ {#1}.{\act{get-data}()}}
+\newcommand{\dagettag}[1]{ {#1}.{\act{get-tag}()}}
+\newcommand{\treas}{{\sc Treas}}
+\newcommand{\aresopt}{{\sc ares-opt}}
+\newcommand{\algo}[1]{{#1}.A}
+
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\newcommand{\cseq}[1]{\widehat{#1}}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+%\begin{titlepage}
+
+\title{
+	\ares{}:  Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage 	
+	\thanks{This work was partially funded by the Center for Science of Information NSF Award CCF-0939370, 
+		NSF Award CCF-1461559, AFOSR Contract Number: FA9550-14-1-0403, NSF CCF-1553248 and RPF/POST-DOC/0916/0090.}
+}
+
+
+\author{
+	\IEEEauthorblockN{Nicolas Nicolaou$^1$, Viveck Cadambe$^2$, N. Prakash$^3$, 
+		Kishori M. Konwar$^3$, Muriel Medard$^3$ and Nancy Lynch$^3$}
+	\IEEEauthorblockA{
+		\textit{$^1$Algolysis Ltd. \& KIOS Research and Innovation Center of Excellence, Univ. of Cyprus, 
+			Nicosia, Cyprus}\\
+		\textit{$^2$EE Department} 
+		\textit{Penn.  State University}
+		University Park, PA, US \\
+		\textit{$^3$Department of EECS,}
+		\textit{Massachusetts Institute of Technology, 
+			Cambridge MA, USA} \\
+		nicolasn@cs.ucy.ac.cy, vxc12@engr.psu.edu, prakashn@mit.edu, kishori@csail.mit.edu, medard@mit.edu, lynch@csail.mit.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\input{abstract_v4.tex}
+
+
+\begin{IEEEkeywords}
+	atomic storage; erasure codes; fault tolerance;
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:intro}
+\input{intro_v7.tex}
+
+\section{Model and Definitions}\label{model}
+\input{model_v2.tex}
+
+\section{Data Access Primitives}
+\input{dap_v1.tex}\label{ssec:dap}
+
+\section{ \ares{} Protocol}
+\label{sec:ares}
+\input{algorithm_v8.tex}
+
+
+
+%\subsection{\ares{} Correctness}
+%\vspace{-0.25em}
+%\label{sec:correct}
+%\input{correctenss_v3.tex}
+
+
+\section{Implementation of the DAP{s}}\label{ssec:dap:impl}
+\input{algorithm_atomic_v3.tex}
+
+\subsection{Atomicity  Property of \ares{}}
+\label{sec:safety:b}
+\input{time_analysis_short_v2.tex}
+
+%\section{\treas: A new two-round erasure-code based algorithm}\label{sec:treas}
+%\input{algorithm_atomic_v3.tex}
+
+%\section{\aresopt: Reduced bandwidth consuming reconfiguration}
+%\label{sec:transfer}
+%\input{transferstate_v1.tex}
+
+\section{Flexibility of DAPs}\label{sec:dap:flexible}
+\input{discussions_v1.tex}
+
+\section{Conclusions}
+
+\label{sec:conclusions}
+\input{conclusions_v1.tex}
+
+%%%
+%%% BIBLIOGRAPHY
+%%%
+\bibliographystyle{acm}
+%\bibliographystyle{plain}
+%\bibliographystyle{abbrv}
+\bibliography{biblio,cadambe-refs}
+
+%
+%\appendix
+%\input{appendix.v1.tex}
+
+
+\end{document}

@@ -1,0 +1,192 @@
+\remove{We proceed by first introducing some definitions and notation, then by presenting some properties that are satisfied 
+by the reconfiguration service in any execution, and then we show that given these properties our algorithm satisfies 
+the safety (atomicity) conditions. 
+%Due to space limitations the proofs of the main statements are omitted and can be found in \cite{ARES:Arxiv:2018}.
+}
+
+\remove{
+\myparagraph{Notations and definitions.}
+For a server $s$, we use the notation $\atT{s.var}{\state}$ to refer to the value of the state variable $var$, in $s$, at a state $\state$ of an  execution $\EX$. 
+If server  $s$ crashes at a state $\state_f$ in an execution $\EX$ then $\atT{s.var}{\state}\triangleq\atT{s.var}{\state_f}$ for any state variable $var$ and for 
+any state $\state$ that appears after $\state_f$ in $\EX$. 
+%refers to the value of $v$ at $s$ at the state just before crashes. In other words, $\atT{s.v}{T}  \triangleq \atT{s.v}{\hat{T}}$, where $\hat{T}$ is the latest point in the execution, such that, $(a)$ $\hat{T} \leq T$ and $(b)$ $s$ is non-faulty.
+ }
+ 
+ \remove{
+\begin{definition}[Tag of a configuration]  Let  $c \in \mathcal{C}$ be a configuration, $\state$ be a state in some execution $\EX$ then 
+we define the tag of $c$ at state $\state$ as  
+$ \atT{tag(c)}{\state} \triangleq \min_{Q \in \quorums{c}} \max_{s \in Q}~\atT{(s.tag}{\state}).$
+We  drop the suffix $|_\state$, and simply denote as $tag(c)$,  when the state  is clear from the context.
+\end{definition}
+
+\begin{definition}
+Let $\sigma$ be any point in an execution of \ares{} and suppose we use the notation $\cvec{\pr}{\state}$ for $ \atT{\pr.cseq}{\state}$,  i.e., the $cseq$ variable at process $p$ at the state $\state$. %be the value of a configuration sequence vector at a process $\pr$ at some state  $\st$ in an execution $\EX$. 
+Then we define as $ \mu(\cvec{\pr}{\state})  \triangleq  \max\{ i : \cvec{\pr}{\state}[i].status = F\}$ 
+and $ \nu(\cvec{\pr}{\state}) \triangleq |\cvec{\pr}{\state}|$, where $|\cvec{\pr}{\state}|$ is the length of the  configuration vector 
+$\cvec{\pr}{\state}$. % that are not equal to $\bot$.  
+\end{definition}
+
+\begin{definition} [Prefix order]
+Let $\mathbf{x}$ and $\mathbf{y}$ be any two configuration sequences. We say that $\mathbf{x}$ is a prefix of $\mathbf{y}$, denoted by 
+$\mathbf{x} \preceq_p  \mathbf{y}$, if $\config{\mathbf{x}[j]}=\config{\mathbf{y}[j]}$, for all $j$ such that $\mathbf{x}[j]\neq\bot$.
+\end{definition}
+
+%\input{ssec-correct-recon.tex}
+\nn{Next we analyze the properties  satisfied by  ~\ares{}. In brief, the reconfiguration algorithm
+preserves three properties in any execution: 
+$(i)$ \myemph{Configuration Uniqueness}, 
+$(ii)$ \myemph{Configuration 
+Prefix}, and 
+$(iii)$ \myemph{Configuration Progress}. Configuration Uniqueness ensures that no two different 
+configurations are assigned to the same index in a configuration sequence. Configuration
+prefix ensures that any \act{read-config} action 
+returns an extension of the configuration sequence returned by any previous \act{read-config} action. 
+Finally, the configuration progress focuses on the status of the configurations in a sequence, 
+and ensures that a \act{read-config} action observes at least as recent
+\myemph{finalized} configuration as any preceding \act{read-config} action. The following theorem presents formally those 
+properties.}
+
+%The first lemma shows that any two configuration sequences have the same configuration identifiers
+%in the same indexes. 
+%
+%\begin{lemma}[Configuration Uniqueness]
+%	\label{lem:unique}
+%	
+%	%Let $\state_1$ and $\state_2$ be any two states of an execution $\EX$ of the algorithm,
+%	%and $\pr, q$ two participating processes. 
+%	%be the state after the response action of an operation $\op_1$ from process $p$,
+%	%and $\state_2$ be the state after the first $\act{read-config}$ call of an operation $\op_2$ from $q$.
+%	For any processes $\pr, q\in \idSet$ and any states $\state_1, \state_2$ in an execution $\EX$, it must hold that 
+%	$\config{\cvec{\pr}{\state_1}[i]}=\config{\cvec{q}{\state_2}[i]}$,  $\forall i$ s.t. 
+%	$\config{\cvec{\pr}{\state_1}[i]},\config{\cvec{q}{\state_2}[i]}\neq \bot$.
+%\end{lemma}
+%
+%We can now move to an important lemma that shows that any \act{read-config} action 
+%returns an extension of the configuration sequence returned by any previous \act{read-config} action. 
+%First, we show that the last finalized configuration observed by any \act{read-config} action is at least as 
+%recent as the finalized configuration observed by any subsequent \act{read-config} action. 
+%%Using this lemma we will then show that when 
+%
+%\begin{lemma}[Configuration Prefix]
+%	\label{lem:prefix}
+%	Let $\op_1$ and $\op_2$ two 
+%	%read/write/install operations 
+%	completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+%	respectively, such that $\op_1\bef\op_2$ in an execution $\EX$. Let $\state_1$ be the state after the response 
+%	step of $\op_1$ and $\state_2$ the state after the response step 
+%	%termination of the first $\act{read-config}$ 
+%	of $\op_2$. Then 
+%	$\cvec{\pr_1}{\state_1}\preceq_p\cvec{\pr_2}{\state_2}$.
+%\end{lemma}
+%
+%Thus far we focused on the configuration member of each element in $cseq$. As operations do get in account
+%the \myemph{status} of a configuration, i.e. $P$ or $F$, in the next lemma we will examine the relationship of 
+%the last finalized configuration as detected by two operations. First we present a lemma that shows the 
+%monotonicity of the finalized configurations.
+%
+%
+%\begin{lemma}  [Configuration Progress]
+%	\label{lem:finalconf}
+%	Let $\op_1$ and $\op_2$ two 
+%	%read/write/install operations 
+%	completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+%	respectively, such that $\op_1\bef\op_2$ in an execution $\EX$. 
+%	Let $\state_1$ be the state after the response 
+%	step of $\op_1$ and $\state_2$ the state after the response step 
+%	%after the completion of $\op_1$ and $\state_2$ the state after the termination of the first $\act{read-config}$ 
+%	of $\op_2$. Then 
+%	$\mu(\cvec{\pr_1}{\state_1})\leq\mu(\cvec{\pr_2}{\state_2})$.
+%\end{lemma}
+
+
+\begin{theorem}[Reconfiguration Properties]
+	Let $\op_1$ and $\op_2$ be two 
+	%read/write/install operations 
+	completed \act{read-config} actions invoked by processes $\pr_1, \pr_2\in\idSet$ 
+	respectively, such that $\op_1\bef\op_2$ in an execution $\EX$ of ~\ares. 
+	Let $\state_1$ be the state after the response 
+	step of $\op_1$ and $\state_2$ the state after the response step 
+	%after the completion of $\op_1$ and $\state_2$ the state after the termination of the first $\act{read-config}$ 
+	of $\op_2$.
+	%$\cvec{\pr_1}{\state_1}$ and $\cvec{\pr_2}{\state_2}$ at two states $\state_1$ and $\state_2$ 
+	%in an execution $\EX$ of the algorithm  such that $\state_1$ appears before $\state_2$ in $\EX$. 
+	Then the following holds: 
+%	\begin{enumerate}
+	%	\item [$(a)$] 
+	$(a)$	$\cvec{\pr_2}{\state_2}[i].cfg = \cvec{\pr_1}{\state_1}[i].cfg$,  for $ 1 \leq i \leq \nu(\cvec{\pr_1}{\state_1})$,
+	%	\item [$(b)$]
+		%$(b)$  
+	$(b)$	$\cvec{\pr_1}{\state_1}  \preceq_p \cvec{\pr_2}{\state_2}$, and
+	%	\item [$(c)$] 
+		%$(c)$  
+	$(c)$	$\mu(\cvec{\pr_1}{\state_1}) \leq \mu(\cvec{\pr_2}{\state_2})$
+		%; and 
+		%\item [$(d)$]  
+		%\nn{????$(d)$  $\cvec{\pr_2}{\state_2}[i]   = \cvec{\pr_1}{\state_1}[i]$,  for  $ 1 \leq i \leq \mu(\cvec{\pr_1}{\state_1})$????} 
+%	\end{enumerate}
+\end{theorem}
+}
+
+%\input{ssec-correct-safety_v2.tex}
+
+%\subsection{\ares{} Liveness}
+%\label{ssec:liveness}
+%\input{ssec-correct-liveness.tex}
+
+%The propagation of the information of the distributed object in \ares{} is achieved using the $\act{get-tag}$, $\act{get-data}$, 
+%and $\act{put-data}$ actions.  
+Given the properties satisfied by the reconfiguration algorithm of \ares{} 
+and assuming that the DAP used satisfy properties $C1$ and $C2$, as presented
+in Section \ref{ssec:dap}, then  we have the following result. 
+
+\begin{theorem}[Atomicity]
+    Consider  any execution of \ares{} such that in every configuration used   the DAP primitives  satisfy  the DAP consistency properties then ~\ares{} satisfy atomicity property.
+	%, given that the 
+	%$\act{get-data}$, $\act{get-tag}$, and $\act{put-data}$ primitives used satisfy properties
+	%\textbf{C1} and \textbf{C2} of Definition \ref{def:consistency}.
+\end{theorem}
+
+%In  \ares{},  each configuration 
+%may implement the DAPs in a different way as stated below:
+
+\begin{remark}
+	Algorithm \ares{} satisfies atomicity even when the DAP primitives used in two 
+	different configurations $c_1$ and $c_2$ are not the same, given that the $c_i.\act{get-tag}$,
+	$c_i.\act{get-data}$, and the $c_i.\act{put-data}$ primitives 
+	used in each $c_i$ satisfy properties \textbf{C1} and \textbf{C2} of Definition \ref{def:consistency}.  
+\end{remark}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

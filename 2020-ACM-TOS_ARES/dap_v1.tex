@@ -1,0 +1,211 @@
+
+\nn{In this section we introduce a set of  primitives, 	we refer to as  \textit{data access primitives (DAP)},
+	which are invoked by the clients during \act{read/write/reconfig} operations and are defined 
+ %implemented by the  set of servers  of 
+ for any configuration $c$ in \ares{}. 
+% We refer to such 
+% primitives as the  \textit{data access primitives (DAP)} of the  configuration.
+%
+%describe an algorithm for implememting  atomic memory, say  	$A$, in a modular way, given  
+%which can be associated with a configuration $c$.
+ %To allow \ares{} to be modular we  introduce a set of  primitives, implemented on a set of servers 
+%(configuration),  which we refer to as  \textit{data access
+%primitives} (
+The DAPs allow us:  $(i)$ to describe 
+%an atomic memory algorithm, specifically~
+\ares{} in  a \myemph{modular} manner, 
+%$(ii)$ to adaptively change DAP implementation per configuration (thus changing the operation protocol), 
+and $(ii)$ a cleaner reasoning about the correctness of \ares{}.
+%implementation of an atomic memory service, specifically~\ares{}.
+%Additionally, we also require some properties  for the  DAPs to prove the atomicity property of ~\ares{}.
+}
+
+%\nn{In this section we present simple abstractions, we call 
+	%the next section, we present the \treas{} algorithm  \nnrev{based on  of}{using} three 
+%	\textit{data access primitives} (DAP), which can be used to describe an algorithm for implememting  atomic memory, say  
+%	$A$, in a modular way, given  
+%which can be associated with 
+%a configuration $c$.} 
+
+
+\nn{We define three data access primitives for each $c\in\confSet$:}
+%in the context of $c$ are: $(i)$ 
+$\daputdata{c}{\tup{\tg{},v}}$, via which 
+a client can ingest the tag value pair $\tup{\tg{},v}$ in to the configuration $c$;
+ $(ii)$ $\dagetdata{c}$, used to retrieve the most up to date 
+ tag and vlaue pair stored in the configuration $c$; 
+ and $(iii)$ $\dagettag{c}$, used to retrieve the most up to date tag for an object stored in a configuration $c$.
+  \nn{More formally,} assuming  a tag $\tg{}$ from 
+  %$\tg{}$ be a logical timestamp from 
+  a set of totally ordered tags $\tsSet$, 
+  %over a comparison function $<_{\tg{}}$, $v$ be a value within the 
+   a value $v$ from a domain 
+   %of the distributed atomic object 
+   $\valSet$, and a configuration $c$ from 
+  %$c$ be the identifier of 
+  a set of identifiers $\confSet$, the  
+  %We define below the 
+  three primitives are defined 
+  %over a configuration $c\in\confSet$, tag $\tg{}\in\tsSet$, and a value $v\in\valSet$ 
+  as follows:
+  %which we collectively refer to as the \myemph{data-primitives}:
+  %	\kmkrev{\nn{The following theorem captures the main result of this subsection.}} {Below we provide the specification and properties  of the DAPs.}
+  
+    \begin{definition}[Data Access Primitives] %Let $c$, $c \in C$,  be any configuration identifier  and  any read, write or client that invokes any of the following interfaces:
+  	Given a configuration identifier $c\in\confSet$, any non-faulty client process $\pr$ may invoke the following data access primitives during an execution $\EX$, where $c$ 
+  	is added to specify the configuration specific implementation of the primitives:
+  	\begin{enumerate}
+  		\item [$D1$:]  $\dagettag{c}$ that returns  a tag $\tg{}\in\tsSet$;  
+  		%completes by responding with some tag $t \in \mathcal{T}$
+  		\item[$D2$:] $\dagetdata{c}$ that  
+  		%the response is though returning 
+  		returns a tag-value pair $(\tg{}, v) \in \tsSet \times \valSet$, 
+  		\item[$D3$:] $\daputdata{c}{\tup{\tg{}, v}}$ which accepts the tag-value pair $(\tg{}, v) \in \tsSet \times \valSet$ as argument. 
+  	\end{enumerate} 
+  		%returns a tag-value pair $(t, v) \in \mathcal{T} \times \mathcal{V}$
+  \end{definition}
+%
+%
+% in which a large family of tag-based atomic read/write object implementations can be transformed to. 
+% Such conversion
+% 
+% For a read/write algorithm
+% that uses the presented data-primitives, it can provide atomic guarantees if the data primitives 
+% satisfy the following consistency properties: 
+% 
+%  To implement the \treas{} algorithm, which is based on the DAP primitives, the DAP primitives must satisfy the following
+%  consistency properties.
+
+\remove{
+\begin{algorithm}[!ht]
+	\begin{algorithmic}[2]
+		\begin{multicols}{2}
+			{\scriptsize
+				%\Part{Generic Algorithm $A_1$}
+				\Operation{read}{} 
+				%\State $wCounter\gets wCounter+1$
+				\State $\tup{t, v} \gets \dagetdata{c}$
+				\State $\daputdata{c}{ \tup{t,v}}$
+				\State return $ \tup{t,v}$
+				\EndOperation
+				\Statex
+				\Operation{write}{$v$} 
+				%\State $wCounter\gets wCounter+1$
+				\State $t \gets \dagettag{c}$
+				\State $t_w \gets inc(t)$
+				\State $\daputdata{c}{\tup{t_w,v}}$
+				\EndOperation
+				%\EndPart
+			}
+		\end{multicols}
+	\end{algorithmic}
+	\caption{Read and write operations of generic algorithm $A_1$}
+	\label{algo:atomicity:generic1}
+	\vspace{-1em}
+\end{algorithm}
+
+A number of known tag-based algorithms that implement atomic read/write objects 
+	(e.g., ABD \cite{ABD96}, \fast \cite{CDGL04} -- see \cite{ARES:Arxiv:2018}), can be expressed 
+	in terms of DAP. In particular, many algorithms can be transformed in an algorithmic template, say $A_1$, 
+	presented in Alg. \ref{algo:atomicity:generic1}. 
+	In brief, a read operation in $A_1$ performs $\dagetdata{c}$ to retrieve a tag-value pair, $\tup{\tg{},v}$ from a configuration $c$, and then 
+	it performs a $c.\act{put-data}(\tup{\tg{},v})$ to propagate that pair to the configuration $c$. A write operation is similar to the read but before 
+	performing the $\act{put-data}$ action it generates a new tag which associates with the value to be written.
+	%
+	It can be shown 
+	%\cite{ARES:Arxiv:2018} 
+	that an algorithm described in the form $A_1$ satisfies atomic guarantees and liveness,
+	if the DAP satisfy the following consistency properties:
+}
+  
+  \kmk{In order for the DAPs to be useful in designing the \ares{} algorithm we further require the following consistency
+   properties. As we see later in Section \ref{sec:safety:b}, the safety property of \ares{} 
+   %hinges 
+   holds, given that these properties hold for the DAPs in each configuration.} %as we see later in Section \ref{sec:safety:b}.}
+ 
+ \begin{property}[DAP Consistency Properties]\label{property:dap}  In an execution $\EX$ 
+ 	we say that a DAP operation in an execution $\EX$ is complete if both the invocation and the 
+ 	matching response step  appear in $\EX$. 
+ 	If $\Pi$ is the set of complete DAP operations in execution $\EX$ then for any $\phi,\pi\in\Pi$: 
+ 	%be an execution of some algorithm that executes the data-primitives 
+ \begin{enumerate}
+ \item[ C1 ]  If $\phi$ is  $\daputdata{c}{\tup{\tg{\phi}, v_\phi}}$, for $c \in \confSet$, $\tup{\tg{\phi}, v_\phi} \in\tsSet\times\valSet$, % and $v_1 \in \valSet$,
+ and $\pi$ is $\dagettag{c}$ (or  $\dagetdata{c}$) 
+ %in $\EX$ such that 
+ that returns $\tg{\pi} \in \tsSet$ (or $\tup{\tg{\pi}, v_{\pi}} \in \tsSet \times \valSet$) and $\phi$ completes \nn{before $\pi$ is invoked} in $\EX$, then $\tg{\pi} \geq \tg{\phi}$.
+ \item[ C2 ] \sloppy If $\phi$ is a $\dagetdata{c}$ that returns $\tup{\tg{\pi}, v_\pi } \in \tsSet \times \valSet$, 
+ then there exists $\pi$ such that $\pi$ is $\daputdata{c}{\tup{\tg{\pi}, v_{\pi}}}$ and $\phi$ did not complete before the invocation of $\pi$. 
+ If no such $\pi$ exists in $\EX$, then $(\tg{\pi}, v_{\pi})$ is equal to $(t_0, v_0)$.
+ \end{enumerate} \label{def:consistency}
+ \end{property}\vspace{-0.5em}
+
+\nn{In Section \ref{ssec:dap:impl} we show how to implement a set of DAPs, where erasure-codes are used to reduce storage and communication costs. 
+	%We show that 
+	Our DAP implementation satisfies Property \ref{property:dap}.}
+
+   \nn{
+ 	As noted earlier, expressing \ares{}
+ 	%an atomic memory implementation  algorithm 
+ 	in terms of the DAPs 
+ 	%primitives 
+ 	allows one to achieve a modular 
+	design. Modularity enables the usage of different DAP
+	implementation per configuration, during any execution of \ares{},
+	as long as the DAPs implemented in each configuration satisfy Property \ref{property:dap}.
+	For example, the DAPs in a configuration $c$ may be implemented using replication,
+	while the DAPs in the next configuration say $c'$, may be implemented using erasure-codes.}	
+\nnfix{
+%	This enables the use of different coding algorithms based on the application 
+% 		or even per configuration in the same system
+%		without affecting the correctness of \ares{}.
+		Thus, a system may use a scheme that offers higher fault tolerance (e.g. replication)
+	when storage is not an issue, while switching to a more storage efficient (less fault-tolerant)
+scheme when storage gets limited. }
+
+%	This in turn, allows the usage of different coding algorithms and 
+%	code parameters in each individual configuration without affecting 
+%	the correctness of \ares{}.
+
+	
+	\nn{
+		In Section \ref{sec:dap:flexible}, we show that the presented DAPs are not only suitable
+	for algorithm \ares{}, but can also be used to implement a large family of atomic read/write
+	storage implementations. By describing an algorithm $A$ according to a simple algorithmic 
+	template (see Alg.~\ref{algo:atomicity:generic1}), we show that $A$ preserves safety (atomicity) if 
+	the used DAPs satisfy Property \ref{property:dap}, and $A$ preserves liveness (termination),
+	if every invocation of the used DAPs terminate,  under the failure model assumed.
+}
+%		
+%	%for such algorithm. First and foremost, every configuration introduced during any execution of ~\ares{} may have varying number of servers or values of code parameters. 
+%	The modular framework allows use to implement atomic memory using ~\ares{}
+%with a wide range of configuration parameters.	
+%	Moreover, describing an algorithm according to the algorithmic  template $A_1$ (Alg.~\ref{algo:atomicity:generic1} in Section ~\ref{sec:dap:flexible}) allows  to prove the algorithm preservers \textit{safety property} (atomicity) 
+%	% it enables ease of reasoning about the safety of the algorithm  
+%	% given that atomicity holds if 
+%	by simply showing that the  DAP consistency properties hold, and the algorithm is \textit{live} \nn{if each
+%	invocation of a DAP terminates, under the failure model assumed.} 
+%	Second, the safety and liveness proofs for complex algorithms, such as  \ares{},  % algorithm  
+%	become easier as one may reason about the  atomictiy property of ~\ares{} based on the consistency propertyies of the underlying  DAP primitives 	without involving the underlying implementation of those primitives.. Next the consistency properties of these DAPs can be argued  based on the configuration specific
+%	implementation of them.
+%%	 that are satisfied by the primitives used,
+%%	without involving the underlying implementation of those primitives. 
+%	Also, describing a reconfigurable algorithm using DAPs, provides the flexibility 
+%	to use different implementation mechanics for the DAPs in each reconfiguration, as long as the DAPs satisfy the necessary properties.} %Hence, makes our algorithm \myemph{adaptive}.}
+%Now we show that if DAP properties are satisfied from the DAP, then algorithmic template $A_1$ (Alg.~\ref{algo:atomicity:generic1})  implements an atomic read/write algorithm. 
+ %We can show that $A_1$ satisfy atomic guarantees and liveness if the DAP in the above algorithms satisfy the DAP consistency properties. Our liveness guarantees are applicable only when we consider one instance of {\treas}, but livess cannot be
+ %guaranteed for {\ares}.
+ 
+ \remove{
+ {\bf we should move it to a later section}
+ \begin{theorem}[\nn{Correctness} of $A_1$]\label{atomicity:A1}
+ Suppose the DAP implementation satisfies the consistency properties $C1$ and $C2$ of  Definition \ref{def:consistency}
+ for a configuration $c\in\confSet$. 
+ Then any execution $\EX$  of \nn{algorithm $c.A_1$}
+ %the  atomicity protocols $A_1$  on a 
+ %fixed set of servers $S$, of some 
+ %configuration $c\in\confSet$,  
+ %as in Fig. ~\ref{algo:atomicity:generic1} satisfies atomic read and write and is live if the  primitive functions are live in $\xi$.
+ is atomic and live if each DAP \nn{invocation terminates} in $\EX$ \nn{under the failure model $c.\mathcal{F}$}.
+ \end{theorem}
+%\nn{[NN: How can those primitives be used to show correctness of an algorithm? I think this is important to discuss. Also we should mention that these primitives are universal and can be used to implement other tag-based algorithms.]}
+}

@@ -1,0 +1,85 @@
+----------------------- REVIEW 1 ---------------------
+PAPER: 403
+TITLE:  ARES: Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage
+AUTHORS: Nicolas Nicolaou, Viveck Cadambe, N Prakash, Kishori Konwar, Muriel Medard and Nancy Lynch
+
+Overall evaluation: 0 (borderline paper)
+
+----------- Overall evaluation -----------
+This work presents the first erasure-code based atomic algorithm, called ARES, which allows the set of hosts to be modified in the course of an execution. ARES is composed of three main components: (i) a reconfiguration protocol, (ii) a read/write protocol, and (iii) a set of data access primitives. The design of ARES is modular
+and is such to accommodate the usage of various erasure-code parameters on a per-configuration basis.
+
+
+The article may be improved connecting the work with some literature of the state of the art. The connection with current methods [1] and efficient infrastructures [2] should be clarified to connect the approach to a larger system. 
+
+[1] Song H, Li W, Shen P, Vasilakos A. Gradient-driven parking navigation using a continuous information potential field based on wireless sensor network. Information Sciences, 408(C), 100-114, DOI information: 10.1016/j.ins.2017.04.042, OCT 2017. 
+[2]Fan, X., Song, H., Fan, X., & Yang, J. (1939). Imperfect information dynamic stackelberg game based resource allocation using hidden markov for cloud computing. IEEE Transactions on Services Computing, vol:11(1): 78-89, Feb. 2016, doi: 10.1109/TSC.2016.2528246.
+
+
+----------------------- REVIEW 2 ---------------------
+PAPER: 403
+TITLE:  ARES: Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage
+AUTHORS: Nicolas Nicolaou, Viveck Cadambe, N Prakash, Kishori Konwar, Muriel Medard and Nancy Lynch
+
+Overall evaluation: 0 (borderline paper)
+
+----------- Overall evaluation -----------
+The paper addresses the problem of building an efficient atomic storage in dynamic settings. The main contribution is the fusion of techniques (known at the state of the art) used to build erasure coded-based distributed data store with with those used to handle dynamic systems (i.e., servers reconfiguration).
+
+From this point of view, the paper is and adaptation of RAMBO scheme to erasure coded-based distributed data store.
+
+Points in favours:
+- Studying dynamic shared object is interesting (currently we can say that the world is dynamic) and challenging.
+
+- Using a modular approach helps in understanding the real complexity of the problem.
+
+Points against:
+- the proposed solution seems just a combination of known techniques.
+
+- The solution uses a consensus-based reconfiguration service while (as the authors said) it has been shown that consensus is not needed to reconfigure servers. Why they are not considering this approach?
+
+Detailed comments
+
+The paper is generally well written even if some points need some improvements to help the reader in following the presentation:
+
+- Section 2: why reconfiguration is done by clients and not by servers themselves? Are reconfiguration clients disjoint from readers and writers? it sound strange to me that a user of the storage knows when its time to reconfigure, this is something that an administrator is more likely to do. Please clarify this point.
+
+- Section 2, "Configurations": The author say "each configuration is used to describe the way the servers are grouped into intersecting sets". How does a configuration describe quorums? Do processes know the configuration? Do processes know the composition of its quorums?
+
+- Section 2 "Executions": What is the difference between a process and a 
+processor?  
+
+- Section 2 "Executions": What do you mean with "operation" when you define the notion of "well-formed execution"?
+
+- Section 2: "well-formed execution" seems to be defined in a different way in paragraph "Executions" and in paragraph "Reconfigurable Atomic Read/write Objects". In the first case it seems that you have exactly one operation at each time; in the second, it seems that you may have at most one operation. 
+
+- Section 2, "Reconfigurable Atomic Read/write Objects": I do not understand A2.
+
+- Section 2, "Reconfigurable Atomic Read/write Objects": It seems to me that trough A1-A3 you are implicitly saying that you want linearizability? Is it correct? If yes, why not just saying that you are requiring linearizability? If not, where is the difference with linearizability?
+
+- Section 2, "Storage and Communication Costs": the name of the metrics you selected are misleading. 
+
+- Section 3: it seems to me that the DAP object used here is basically a sequencer. Is it correct? If yes, please add this intuition is correct, why not saying it directly?
+
+- Section 3: to justify the modular approach, the authors say that using modules you can choose the best one in every configuration. Why should I change the DAP implementation at run-time? I think this argument is weak. From my point of view, the modular approach is winning as it relies on interfaces and thus it allows you adapt and choose the best implementation for every environment; however, one you selected the best for your system, why should you change it in time?
+
+- Section 4 and 5: The ARES and DAP protocols seems adaptations/extensions of RAMBO and other ECDDS. It would be nice to have an explanation of how and when they are working differently and/or similarly.
+
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 403
+TITLE:  ARES: Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage
+AUTHORS: Nicolas Nicolaou, Viveck Cadambe, N Prakash, Kishori Konwar, Muriel Medard and Nancy Lynch
+
+Overall evaluation: 0 (borderline paper)
+
+----------- Overall evaluation -----------
+This paper designed the erasure-code based atomic algorithm, which can achieve adaptive, reconfigurable, erasure coded and atomic storage. Moreover, the authors present theoretical bounds on the latency of read/write operations. The storage and communication costs of the ARES algorithm is also analyzed in this paper. However, this paper has the following limitations:
+
+1)   This paper lacks of a mathematical demonstration about the bound to explain the superiority of this paper and the rationality of the ARES algorithm.
+
+2)   The authors should conduct some experimental data to analyze the storage and communication costs of the ARES algorithm.
+
+3)   This paper needs to show some simple examples and flow diagrams to better illustrate the process of the proposed algorithm. Otherwise, the algorithms are difficult for readers to understand. 
+
+4)   In this paper, the designed ARES and DAP protocols are just adaptations/extensions from existing RAMBO and other ECDDS. As such, the authors need to clarify both the similarities and differences between these works.

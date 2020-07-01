@@ -1,0 +1,71 @@
+ %For a read/write algorithm
+%that uses the presented data-primitives, it can provide atomic guarantees if the data primitives 
+%satisfy the following consistency properties: 
+%To implement an algorithm, which is based on the DAP primitives, the DAP primitives must satisfy the following
+%consistency properties.
+
+
+In this section, we argue that  various implementations of DAPs  can be used in \ares{}. In fact, via \act{reconfig} 
+operations, one can implement a highly adaptive 
+%strongly consistent 
+atomic DSS: 
+replication-based can be transformed into erasure-code based DSS; increase or decrease the number of storage servers; 
+ study 
+the performance of the DSS under various code parameters, etc. 
+The insight to implementing various DAPs comes from the observation that the  simple  algorithmic 
+	template $A$ (see Alg.~\ref{algo:atomicity:generic1}) for reads and writes protocol combined with 
+	any implementation of DAPs, satisfying Property~\ref{property:dap} gives rise to a MWMR atomic memory service.
+	Moreover, the read and writes operations terminate as long as the implemented DAPs complete. 
+%	implements an atomic  storage if the implementation of the  DAPs satisfy Property \ref{property:dap}, and $A$ preserves liveness (termination),
+%	if every invocation of the used DAPs terminate.
+\begin{algorithm}[!ht]
+	\begin{algorithmic}[2]
+		\begin{multicols}{2}
+			{\scriptsize
+				%\Part{Generic Algorithm $A_1$}
+				\Operation{read}{} 
+				%\State $wCounter\gets wCounter+1$
+				\State $\tup{t, v} \gets \dagetdata{c}$
+				\State $\daputdata{c}{ \tup{t,v}}$
+				\State return $ \tup{t,v}$
+				\EndOperation
+				%\Statex
+				\Operation{write}{$v$} 
+				%\State $wCounter\gets wCounter+1$
+				\State $t \gets \dagettag{c}$
+				\State $t_w \gets inc(t)$
+				\State $\daputdata{c}{\tup{t_w,v}}$
+				\EndOperation
+				%\EndPart
+			}
+		\end{multicols}
+	\end{algorithmic}
+	\caption{Template $A$ for the client-side read/write steps.}
+	\label{algo:atomicity:generic1}
+	\vspace{-1em}
+\end{algorithm}	
+	
+
+	A read operation in $A$ performs $\dagetdata{c}$ to retrieve a tag-value pair, $\tup{\tg{},v}$ from a configuration $c$, and then 
+	it performs a $c.\act{put-data}(\tup{\tg{},v})$ to propagate that pair to the configuration $c$. A write operation is similar to the read but before 
+	performing the $\act{put-data}$ action it generates a new tag which associates with the value to be written.
+	%
+The following result shows 
+	%\cite{ARES:Arxiv:2018} 
+	that $A$ is atomic and live,
+	if the DAPs satisfy Property~\ref{property:dap} and live.
+	 
+ \begin{theorem}[\nn{Atomicity} of template $A$]\label{atomicity:A1}
+ Suppose the DAP implementation satisfies the consistency properties $C1$ and $C2$ of  Property \ref{def:consistency}
+ for a configuration $c\in\confSet$. 
+ Then any execution $\EX$  of \nn{algorithm $A$ in configuration $c$}
+ %the  atomicity protocols $A_1$  on a 
+ %fixed set of servers $S$, of some 
+ %configuration $c\in\confSet$,  
+ %as in Fig. ~\ref{algo:atomicity:generic1} satisfies atomic read and write and is live if the  primitive functions are live in $\xi$.
+ is atomic and live if each DAP \nn{invocation terminates} in $\EX$ \nn{under the failure model $c.\mathcal{F}$}.
+ \end{theorem}
+ A number of known tag-based algorithms that implement atomic read/write objects 
+	(e.g., ABD \cite{ABD96}, \fast \cite{CDGL04} -- see \cite{ARES:Arxiv:2018}), can be expressed 
+	in terms of DAP.	
+

@@ -1,0 +1,496 @@
+
+\nnrev{With  the rapid increase of computing power on portable devices, such as, smartphone, laptops, tablets, etc.,
+and the near ubiquitous availability of Internet connectivity, our day to day lives are becoming increasingly 
+dependent  on Internet-based applications. Most of these applications, 
+%\nnrev{if not all,}{}
+ rely on large volumes 
+of data from a wide range of sources. %, and their performance improves with the easy accessibility of the data. 
+%\nn{[NN: What do we mean here?]}  
+%Today, data is gathered at an even faster pace from numerous sources of interconnected devices
+%around the world. In order to keep abreast with this veritable tsunami of data, researchers, in both 
+%industry and academia, are hurtling to invent new ways to increase  {the} capacity of durable, large-scale distributed
+%storage systems, and the efficient ingestion and retrieval of data.
+ %Currently, most of the data is stored in 
+%\nnrev{and accessed from}{} 
+%cloud-based storages,  
+%\nnrev{in datacenters enabling data hungry applications consume these data
+%through the Internet.}
+%{offered by major providers like} Amazon, Dropbox, Google, etc. 
+%\nnrev{are just a few of the providers of cloud-based durable 
+%data storage for application developers to build data-driven applications with access 
+%data programatically via APIs, without burdening themselves with the task of managing data.}{}
+%
+}{}
+ 
+  Distributed Storage Systems (DSS)  store large
+amounts of data in an affordable manner. Cloud vendors deploy hundreds to thousands of commodity machines, networked together to act as {a single} 
+giant storage system. 
+Component failures of  commodity devices,  and network delays are the norm, therefore, \nnrev{designing}{ensuring} consistent data-access and availability  at the same time is challenging. Vendors often solve availability by replicating data across multiple servers. \vc{These services use carefully constructed algorithms that ensure that these copies \nn{are} consistent, especially when they can be accessed concurrently by different operations.} \nn{The problem of keeping copies consistent becomes even more challenging
+	when failed servers need to be replaced or new servers are added, without interrupting the service.  Any type of service interruption in a heavily used DSS usually translates to immense revenue loss. } 
+
+
+%\nn{The goal of this work is to provide a \myemph{reconfigurable}, \textit{erasure-coded},  \myemph{atomic} or \myemph{strongly consistent} ~\cite{HW90, Lynch1996} 
+%	read/write data storage implementation, which will: (i)
+%provide the illusion that data objects are accessed sequentially, even when each object is accessed by multiple operations concurrently, 
+%(ii) allow the set of data hosts (servers) to change without affecting the operation of the service, (iii) tolerate crash failures, 
+%and (iv) require low storage and communication resources.}
+
+
+\nn{The goal of this work is to provide an algorithm for implementing strongly consistent \vc{(i.e., atomic/linearizable)}, fault-tolerant distributed read/write storage, with  
+	low storage and communication footprint, and the ability to reconfigure the set of data hosts without service interruptions.} 
+		
+%	
+%	
+%	\myemph{reconfigurable}, \textit{erasure-coded},  \myemph{atomic} or \myemph{strongly consistent} ~\cite{HW90, Lynch1996} 
+%	read/write data storage implementation, which will: (i)
+%	provide the illusion that data objects are accessed sequentially, even when each object is accessed by multiple operations concurrently, 
+%	(ii) allow the set of data hosts (servers) to change without affecting the operation of the service, (iii) tolerate crash failures, 
+%	and (iv) require low storage and communication resources. These properties will make our algorithm attractive in practice.}
+%
+
+\myparagraph{Replication-based Atomic Storage.} 
+A long stream of work used replication of data across multiple servers to implement atomic (linearizable) read/write objects in message-passing, asynchronous environments where servers (data hosts) may crash fail~\cite{FNP15, ABD96, CDGL04,  FL03,  FHN16,   GNS08,  GNS09, LS97}. \nn{\vc{A notable} replication-based algorithm appears in the work by Attiya, Bar-Noy and Dolev~\cite{ABD96} (we refer to as the ABD algorithm) 
+	\vc{which implemented non-blocking atomic read/write data storage} via logical timestamps paired with values to order read/write operations.} 
+%and in the work by Fan and Lynch~\cite{FL03} (which is referred to as the LDR algorithm). 
+Replication based strategies, however, incur high storage and communication costs; for example, to store 1,000,000 objects each of size 1MB (a total size of $1$TB) across a $3$ server system, the ABD algorithm replicates the objects in all the $3$ servers,  which blows up the worst-case \myemph{storage cost} to $3$TB. Additionally, every write or read operation may need to transmit up to $3$MB of data (while retrieving an object value of size $1$MB), incurring high \myemph{communication cost}. 
+%\nnrev{of $3$ MB. The communication cost, or simply the cost, associated with a read or write operation is the amount of total data in bytes that gets transmitted in the various messages sent as part of the operation.}{}
+% Since the focus in this paper is on  large data objects, the storage and communication costs include only the total sizes of stable storage and messages dedicated to the data itself. \nn{[NN:Do we need the last sentence?]}
+
+
+\myparagraph{Erasure Code-based Atomic Storage.} 
+%\nnrev{Replication-based atomic memory emulations  suffer from high storage cost and 
+%bandwidth with larger replication factor. On the other hand, higher replication factor increases data-durability in the presence of failures. 
+%%Several commercial vendors, use erasure codes in their system for fault-tolerance and storage cost reduction,  for their systems which store immutable data.
+%}{To avoid the high storage and communication costs stemmed from the use of replication, }
+%erasure codes provide an alternative way to emulate fault-tolerant
+%shared 
+%atomic storage.
+\nn{Erasure Coded-based DSS are extremely beneficial to save storage and  communication costs while maintaining similar fault-tolerance levels as in replication based DSS~\cite{GIZA2017}.}
+% In comparison to replication, algorithms based on erasure codes significantly reduce both the storage and communication costs of the implementation. 
+Mechanisms using an $[n, k]$ erasure code splits a value $v$ of size, say  $1$ unit, into $k$ elements, each of size $\frac{1}{k}$ units, \nnrev{creates $n$ \myemph{coded elements},
+ and stores one coded element per server. The size of each coded element is also $\frac{1}{k}$ units, and thus the total storage cost across the $n$ servers is $\frac{n}{k}$ units.}{creates $n$ \myemph{coded elements} of the same size, and stores one coded element per server, for a total storage cost of $\frac{n}{k}$ units.} 
+%For example, if we use 
+\nnrev{So in our previous example, an $[n = 3, k = 2]$ code, will incur a storage cost of  $1.5$ TB, which is 2 times  lower than the storage needed by replication-based methods.
+A similar reduction in  bandwidth used per operation, \nn{and thus in operation latency}, is also possible.}{So the $[n = 3, k = 2]$ code in the previous example will reduce the storage cost to 1.5TB and the communication cost 
+to 1.5MB (improving also operation latency).} 
+%in many erasure code-based algorithms for implementing atomicity.
+ %A class of erasure codes known as
+ Maximum Distance Separable (MDS) codes have the property that value $v$ can be reconstructed from any $k$ out of these $n$ coded elements\vc{; \nnrev{it is also worth noting}{note} that replication is a special case of MDS codes with $k=1$.} 
+ \vc{\nnrev{The potential cost-savings in light of rapidly growing data volumes, combined}{In addition to the potential cost-savings, the suitability of erasure-codes for DSS is amplified} with the emergence of highly optimized erasure coding libraries, %optimized to specific hardware 
+ \nn{that} reduce encoding/decoding overheads~\cite{burihabwa2016performance, intel-isal, EC-Cache}. 
+ %has %particularly 
+ %made erasure coding increasingly attractive in recent times. 
+ In fact, an exciting recent body of systems and optimization works \cite{PARS, EC-Store, EC-Cache, WPS, xiang2016joint, joshi2017efficient, xiang2015multi,yu2018sp} have demonstrated that for several data stores, 
+ \nn{the use of} erasure coding \nnrev{can have much}{results in} lower latencies than replication based \nn{approaches.}
+ \nn{This is achieved} by allowing the system \nnrev{to more flexibility} to carefully tune erasure coding parameters, data placement strategies, and other system parameters
+ \nn{that} improve %minimize \nn{operation} latency based on 
+ workload characteristics -- such as load and spatial distribution. A complementary body of work has \nnrev{developed}{proposed} novel non-blocking algorithms that use erasure coding to provide an \nnrev{consistent}{} atomic storage over asynchronous message passing models \nnrev{have been proposed in}{}\cite{CT06, CadambeLMM17,  DGL08, SODA2016, radon,GIZA2017, Zhang2016}.}
+ %, and used in  practice~\cite{GIZA2017, Zhang2016}.} 
+%
+Since erasure code-based algorithms, unlike \nn{their} replication-based counter parts, incur the additional burden of synchronizing the access of multiple pieces of coded-elements from the \textit{same version} of the data object, these algorithms \nnrev{are}{are quite} complex. 
+
+
+\myparagraph{Reconfigurable Atomic Storage.} %for Erasure-coded Algorithms.} %\red{We need to shorten this paragraph}
+%\nnrev{Apart from storage cost and bandwidth efficient atomic storage, any  such  distributed storage systems require removal or addition  of the set of servers. }
+%\nn{Although replication and erasure-codes may help the system survive server failures,
+%	%the failure of a subset of servers, 
+%	they do not suffice to ensure the liveness of the 
+%service in a longer period where a larger number of servers may fail.}
+%The gains on storage and operation latency, is a key-motivation to consider erasure-coded based algorithms for \myemph{reconfigurable} systems as well,
+%where the set of servers may change 
+%\myemph{Reconfiguration} \nnrev{operations}{is the process that}  allows addition or removal of servers %from a live system, \nnrev{or changing the underlying storage mechanisms or algorithms.}
+%without affecting the normal operation 
+%during the execution of the service.
+\nn{{\it Configuration} refers to the set of storage servers that are collectively used to host the data and implement the DSS. %,  is called a .
+{\it Reconfiguration} is the process of adding or removing \nnrev{configurations}{servers}  in a DSS. }
+%reonfigurations that implements the same set of objects.}
+%
+In practice, reconfigurations are often desirable by system administrators~\cite{aguileratutorial}, for a wide range of 
+purposes,  
+	especially during system maintenance. As the set of storage servers becomes older and unreliable they are replaced with new ones to ensure data-durability. \vc{Furthermore, to scale the storage service to increased or decreased load,  larger (or smaller) configurations \nnrev{might be}{may} be needed to be 
+	 deployed.}
+	%\blue{In such atomic memory system, we consider three operations: \it{read}, \it{write} and \it{recon}}.
+	 Therefore, in order to carry out such reconfiguration steps, in addition to the usual  \act{read} and \act{write} operations, an operation called \act{reconfig}  is  invoked  by  reconfiguration clients.
+%Reconfiguration also allows the system administrator to enhance data survivability,  or even  scale up or down the  level of performance.
+ %However, p
+ Performing reconfiguration of a system, without service
+interruption, is a very challenging task and an active area of research. RAMBO~\cite{LS02} and DynaStore~\cite{ AKMS09}  are two of the handful 
+of algorithms~\cite{CGGMS09, GM15, G03, LVM15, SMMK2010, spiegelman:DISC:2017} that allows reconfiguration on live systems; \vc{all these algorithms are replication-based}. 
+%Recently, the authors in~\cite{spiegelman:DISC:2017} presented a general framework for consensus-free reconfiguration algorithms. 
+
+\nnrev{So far, none of the existing reconfiguration approaches
+demonstrated the use of erasure-codes for fault-tolerance, 
+	or provided any analysis of bandwidth and storage cost of such algorithm.}{}
+%Thus, such algorithms do not benefit from the low storage overheads and low communication 
+%cost offered when using erasure-codes.} %, even though some (e.g., \cite{spiegelman:DISC:2017}) may be able use them.}
+% implicitly or explicitly, assume  a replication-based system in \nnrev{their}{each} configuration.
+Despite the attractive prospects of creating strongly consistent DSS with low storage and communication costs\nnrev{ by employing erasure-codes}{}, so far,  \nnrev{there is}{} no algorithmic framework \nn{for reconfigurable atomic DSS }\nnrev{to reconfigure the underlying configurations without service
+interruption}{employed erasure coding for fault-tolerance, 
+or provided any analysis of bandwidth and storage costs}. Our paper fills this vital gap in algorithms literature, 
+through the development of novel reconfigurable approach for atomic storage that use \emph{erasure codes} for fault-tolerance. 
+From a practical viewpoint, our work may be interpreted as a bridge between the systems optimization works \cite{PARS, EC-Store, EC-Cache, WPS, xiang2016joint, joshi2017efficient, xiang2015multi,yu2018sp} and non-blocking erasure coded based consistent storage \cite{CT06, CadambeLMM17,  DGL08, SODA2016, radon, GIZA2017, Zhang2016}. Specifically, the use of our \emph{reconfigurable} algorithms would potentially enable a data storage service to dynamically shift between different erasure coding based parameters and placement strategies, as the demand characteristics (such as load and spatial distribution) change, without service interruption.
+
+
+%\blue{address you cannot do tone}
+\remove{
+A natural strategy to obtain reconfigurable erasure-coded atomic storage, 
+	is to tailor existing reconfigurable algorithms to use an erasure-coded 
+	atomic algorithm proposed for the static environment (i.e., \cite{CT06, CadambeLMM17,  DGL08, SODA2016, radon}). 
+	Most existing reconfigurable algorithms use the mechanics of the underlying atomic storage algorithm 
+	to move the latest value of the atomic object from one configuration to the next. As the set of 
+	servers may change from  configuration to configuration, the parameters $n$ and $k$ used in the MDS $[n, k]$
+	coding scheme of one configuration may be invalid for the next configuration \nn{(mainly due to 
+	different number of participating  servers)}.  As a result, the purpose of choosing specific
+	$n$ and $k$ to optimize storage and communication costs would be lost.
+	Furthermore, when several configurations are ``merged'' (similar to \cite{GLS03, SMMK2010, spiegelman:DISC:2017}), 
+	it is not clear what the new value of $k$ should be. 
+	%a different coding scheme should be used per configuration, complicating both the \act{recon}
+	%as well as the \act{read} and \act{write} operations. \textbf{[NN: Describe why this is a probelm.]}
+
+	\nn{	
+	%Although previous solutions have been proven to be correct, they were not adopted in practical systems
+	 %due to high storage overhead, communication demands, or high operation latencies (see Table \ref{tab:compare}).
+ In order for a  strongly consistent DSS algorithm to be useful in practice several desirable properties and performance metrics must be considered. 
+ Such an implementation should 
+	$(i)$ incur low storage cost per atomic object;
+	$(ii)$ incur low communication cost during each read/write operation (decreasing the operation latency);  
+	$(iii)$ allow configuration change to accomodate,  system  scale-up or -down, without  service interruption; 
+	$(iv)$ tolerate crash failures; and 
+	$(v)$ provide provable safety and liveness guarantees.
+%%	Therefore, in order to create a strongly consistent distributed storage that is useful in practice, serveral properties are required: $(i)$ the algorithm should incur low storage cost per atomic object $(ii)$ incur  low commuication cost for each read/write operation, which decreases latency of operations; $(iii)$ reconfigurable,  which allows to scale-up or scale-down the system, and replace older nodes to ehnance data durability; $(iv)$ tolerate failures; and $(v)$ provide provable guarantees of safety and liveness.  
+Designing an algorithm that achieves all of the above properties is a non-trivial task.}  
+%Meeting these properties is 
+%	the motivation behind this work.
+}
+%
+%
+%	 So, an important consideration in the modeling/design choice of our algorithm,  \ares{}, is to ensure that we gain/retain the advantages that come with erasure codes, while having the flexibility to reconfigure the system. 
+%	%Moreover, the dependence on a particular atomic memory implementation, prohibits the algorithm 
+%	%from utilizing future more efficient solutions. 
+%	%In order to obtain a cleaner and more flexible design, 
+%	%we opt-in avoiding modifying any existing solution but rather proposing the 
+%	Furthermore, \ares{} is a \textit{modular algorithm}, 
+%	independent of the mechanics of the underlying atomic storage solution. Our design provides the elegance of 
+%	reconfiguring with ignorance about the coding scheme and the atomic storage algorithm used in each configuration.
+%	Finally, in contrast to most existing solutions and motivated by many practical systems,    
+%	our approach assumes clients and servers are separate processes that communicate via point-to-point channels.
+
+
+\remove{
+\paragraph{Combining Erasure-Codes and Reconfiguration}
+
+ A natural approach that comes to mind is to adopt one of the erasure code-based strongly consistent service, originally designed for a static set of servers, to one of the popular reconfiguration based algorithms, such as, RAMBO and DynaStore. We were unable to take such an approach for the following reasons. In RAMBO and DynaStore,  both clients and servers are in the sample processes, but in our model clients and servers are separate processes. First of all, both of these algorithms are designed for replication-based systems and achieving optimal storage and communication costs were not their goals.  In RAMBO, communication  among processes is carried out by continuously gossiping among themselves. Such as communication protocol is not suitable for accounting for communication costs associated with individual read or write operations. On the other hand, in DynaStore, clients speculate active configurations and try to merge them to one configurations, where all configuration changes are reflected,  by following a path of configurations linked in the form of a DAG. In some sense, if there is any resemblance between ~\ares{} and of these algorithms then both ~\ares{} and RAMBO uses consensus to perform the reconfiguration.
+}
+\remove{
+Here, for the first time we provide a strongly consistent distributed storage algorithm which allows reconfiguration, with erasure code-based cost-effective storage. First, we present and algorithm for a static  configuration of servers, which uses erasure codes, which is also the first erasure-code-based atomic memory algorithm that completes any read or write operations in two rounds. Next we design an overarching algorithmic framework which can install new configuration by sue the operation provided by the underlying atomic memory algorithm. As a result, the algorithm can switch and move data from an older configuration to a newer one with uninterrupted service. We also prove the safety and liveness property of the algorithm.
+}
+\myparagraph{Our Contributions.}
+%In this work 
+We develop a \myemph{reconfigurable}, \textit{erasure-coded},  \myemph{atomic} or \myemph{strongly consistent} ~\cite{HW90, Lynch1996} 
+	read/write storage algorithm, called \ares{}. Motivated by many practical systems, \ares{} assumes clients and servers are separate processes \footnote{In practice, these processes can be on the same node or different nodes.} that communicate via logical point-to-point channels.
+
+\vc{In contrast to the, replication-based reconfigurable algorithms \cite{LS02, AKMS09, CGGMS09, GM15, G03, LVM15, SMMK2010, spiegelman:DISC:2017}, where a configuration essentially corresponds to the set of servers that stores the data, the same concept
+	% The concept of a \emph{configuration}, however, 
+	for erasure coding need to be much more \nnrev{more rich}{involved}. In particular, in erasure coding, even if the same set of $n$ servers are used, a change in the value of $k$ defines a new configuration. Furthermore, several erasure coding based algorithms \cite{CadambeLMM17,  DGL08} have additional parameters that tune how many older versions each server store, which in turn influences the concurrency level allowed. Tuning of such parameters can also fall under the purview of reconfiguration. 
+	%for erasure coding based algorithms. %Another challenge that we overcome is that 
+}
+
+\vc{
+To accommodate these various reconfiguration requirements, \ares{} takes a modular approach\nnrev{, where the static atomic memory implementation is
+	oblivious of the mechanics of the reconfiguration}. In \nn{particular}, \ares{} \nn{uses a} set of primitives, called \myemph{data-access primitives} (DAPs).
+%, \nnrev{. These primitives, if implemented according to our specifications}{which if implemented to satisfy specific properties} can be combined to provide an abstraction of a static atomic memory storage implementation.
+ \nn{A different implementation of the DAP primitives may be specified in each configuration.} 
+	\nnrev{Each configuration is specified by its own implementation of the DAP primitives.}{} \nnrev{The reconfiguration service then uses}{\ares{}} uses DAPs as a ``black box'' to: % implement: 
+		 (i) %a consensus-based reconfiguration protocol (similar to~\cite{LS02}) that uses DAPs to 
+		 transfer the object state from one configuration to the next during \act{reconfig} operations, and
+		 (ii) invoke \act{read}/\act{write} operations 
+		 %implemented using DAPs 
+		 on a single configuration. \vc{Given the DAP implementation for each configuration
+		 	%, its DAP implementation satisfies specific properties,} 
+		 	we show that \ares{} correctly implements a \textit{reconfigurable}, \textit{atomic} read/write storage.} 
+}
+		 
+		 
+	% to meet the requirements of a practical service. 
+%	will: 
+%	(i) incur low storage cost per atomic object,
+%	(ii) incur low communication cost for each read/write operation (decreasing the operation latency),
+%	(iii) allow the set of data hosts to change, and the system to scale-up or -down, without affecting the operation of the service, 
+%	(iv) tolerate crash failures, and 
+%	(v) provide provable safety and liveness guarantees.
+%
+	%The main focus of this work is to develop an algorithm that  implements reconfigurable atomic storage using erasure-codes on asynchronous
+   %networks. 
+   %We provide the first algorithm that aims to achieve all the above desirable properties of a practical distributed storage system.
+	%To this end, we develop a 
+	%The new algorithm is called \ares{}.  
+
+	%Moreover, the dependence on a particular atomic memory implementation, prohibits the algorithm 
+	%from utilizing future more efficient solutions. 
+	%In order to obtain a cleaner and more flexible design, 
+	%we opt-in avoiding modifying any existing solution but rather proposing the 
+	%
+
+	% We assume that clients and servers are separate processes.
+	
+
+%	\begin{enumerate}
+%\nn{
+		%\item %In order to keep \ares{} general, so as to allow adaptation of already known atomic memory algorithms to the configurations,  	
+	\remove{	
+		\begin{table*}[!h]
+			\begin{center}
+				\begin{tabular}{|lP{1cm}P{1cm}cP{1cm}ccc|}
+					\hline
+					\textbf{Algorithm}  & \textbf{Write Rounds}  & \textbf{Read Rounds} & \textbf{Model}  & \textbf{Memory Model} & \textbf{Redundancy}  & \textbf{Consensus-based} & \textbf{Adaptive}  \\ \hline
+					{\sc CASGC} \cite{CLMM14} & 3 & 2 & Static  & SWMR & Erasure-Codes & No   & No \\
+					{\sc  SODA} \cite{SODA2016} & & & Static & SWMR & Erasure-Codes & No   & No \\  
+					{\sc ORCAS-A} \cite{DGL08} & 3 & $\geq 2$ & Static  & SWMR & Erasure-Codes & No & No \\ 
+					{\sc ORCAS-B} \cite{DGL08} & 3 & 3 & Static  & SWMR & Erasure-Codes & No & No\\ 
+					{\sc ABD} \cite{ABD96} & 2 & 2 & Static  & SWMR & Replication & No  & No \\ 
+					{\sc RAMBO} \cite{LS02} & 2 & 2 & Dynamic  & MWMR & Replication & Yes  & No \\
+					{\sc Dynastore} \cite{AKMS09} & &  & Dynamic & MWMR & Replication & No & No \\
+					{\sc Mergestore} \cite{} & &  & Dynamic  & MWMR & Replication & No & No \\
+					%{\sc SpSn} \cite{} & &  & Dynamic & MWMR & & & \\
+					\hline\hline
+					\ares{} (this paper) & 2 & 2 & Dynamic  & MWMR & Erasure-Codes & Yes  & Yes \\ \hline
+					%\treasmod & 2 & 2 & & No &  & $\frac{1}{ \lceil \frac{k}{\delta +1} \rceil}$ & \\ \hline
+				\end{tabular}
+			\end{center}
+			\caption{Comparison of \ares{} with previous algorithms emulating atomic Read/Write Memory.}\label{tab:compare}
+		\end{table*}
+	}
+			
+		\begin{table*}[!h]
+			\begin{center}
+				\begin{tabular}{|lP{1cm}P{1cm}cP{1cm}ccc|}
+					\hline
+					\textbf{Algorithm}  & \textbf{\#rounds /write}  & \textbf{\#rounds /read} & \textbf{Reconfig.}  & \textbf{Repl. or EC} & \textbf{Storage cost}  & \textbf{read bandwidth} & \textbf{write bandwidth}  \\ 
+					\hline
+
+					{\sc CASGC} \cite{CLMM14} & 3 & 2 & No  & EC & $(\delta +1)\frac{n}{k}$  & $\frac{n}{k}$   & $\frac{n}{k}$ \\
+					{\sc  SODA} \cite{SODA2016} & 2 & 2 & No & EC & $\frac{n}{k}$ & $(\delta +1)\frac{n}{k}$  & $\frac{n^2}{k}$ \\  
+					{\sc ORCAS-A} \cite{DGL08} & 3 & $\geq 2$ & No  & EC & $n$ & $n$ & $n$ \\ 
+					{\sc ORCAS-B} \cite{DGL08} & 3 & 3 & No  & EC & $\infty$ & $\infty$ & $\infty$ \\ 
+					{\sc ABD} \cite{ABD96} & 2 & 2 & No  & Repl. & $n$ & $2n$  & $n$ \\ 
+					{\sc RAMBO} \cite{LS02} & 2 & 2 & Yes  & Repl. & $\geq n$ & $\geq n$  &$\geq n$ \\
+					{\sc Dynastore} \cite{AKMS09} & $\geq 4$ & $\geq 4$ & Yes & Repl. & $\geq n$ & $\geq n$ & $\geq n$ \\
+					{\sc SmartMerge} \cite{LVM15} & 2 & 2  & Yes  & Repl. & $\geq n$ & $\geq n$ & $\geq n$ \\
+					%{\sc SpSn} \cite{} & &  & Dynamic & MWMR & & & \\
+					\hline\hline
+					\ares{} (this paper) & 2 & 2 & Yes & EC & $(\delta +1)\frac{n}{k}$ & $(\delta +1)\frac{n}{k}$  & $\frac{n}{k}$ \\ \hline
+					%\treasmod & 2 & 2 & & No &  & $\frac{1}{ \lceil \frac{k}{\delta +1} \rceil}$ & \\ \hline
+				\end{tabular}
+			\end{center}
+			\caption{Comparison of \ares{} with previous algorithms emulating atomic Read/Write Memory for replication (Repl.) 
+			and erasure-code based (EC) algorithms.  $\delta$ is the maximum number of concurrent writes with any read during the course of an execution of the algorithm. In practice, $\delta < 4$~\cite{GIZA2017}.
+		%	\red{Should we not add communiation and storage cost? What is the difference between recon and adaptive?}
+			}\label{tab:compare}
+		\end{table*}	
+
+	\remove{	\nn{For the ease of exposition and modularity of \ares{} we define a set of primitives, called data-access primitives (DAPs).}}
+		%		,  we  then present the complete \ares{} algorithm, for emulating reconfigurable, atomic read/write storage.}
+		%, a protocol that allows reconfiguration of the servers. 
+%that emulates an atomic memory, 
+%and is specifically suitable for implementing atomic memory service that uses erasure codes without interrupting the service. 
+%		
+		 %In particular, 
+		  
+		  %		 
+%		 
+%		 
+%		 %is implemented in terms of  data access primitives (
+%		 uses DAPs as a ``black box'' to implement read and write operations.
+%		 
+		
+		\vc{The DAP primitives \nnrev{allow}{provide} \ares{} a much broader view of the notion of a configuration as compared to replication-based algorithms. Specifically, the DAP primitives may be parameterized, \nnrev{ by the choice}{following the parameters } of protocols used \nnrev{to implement the primitive and its parameters}{for their implementation} (e.g., erasure coding parameters, set of servers, quorum design, concurrency level, etc.). 
+			While transitioning from one configuration to another, our modular construction, allows \ares{} to reconfigure between different sets of servers, quorum configurations, and erasure coding parameters. In principle, \ares{} even allows to reconfigure between completely different protocols as long as they can be interpreted/expressed in terms of the primitives; though in this paper, we only present one implementation of the DAP primitives to keep the scope of the paper reasonable. From a technical point of view, our modular structure \nn{makes} the atomicity proof of a complex algorithm (like \ares{}) easier}.
+%		and is also \nn{able} to adaptively change DAP mechanisms in a per configuration basis.
+		%the replication based transformations of  \mwABD{} and {\sc ldr}.
+%        Such description simplifies the %show that our algorithm 
+%	 atomicity proof,  as it is sufficient to show that the implemented primitives satisfy certain  properties.
+%
+
+%		\nn{To achieve reconfiguration, \ares{} implements a \textit{recon} operation,
+%			that in its heart uses a consensus algorithm similar to ~\cite{LS02}. 
+%			In particular, each configuration in \ares{} implements  a distributed consensus service (like Paxos~\cite{L98} or Raft~\cite{Raft}) 
+%			 on its set of servers to install the next configuration. 
+%			 %Note that the use of consensus may prevent 
+%%			 
+%%			 Note  that the use of distributed consensus we cannot 
+%%			guarantee the termination of the 
+%			a reconfiguration operation from terminating~\cite{FLP85}, however this does not affect the liveness and safety of 
+%			 %but still guarantee  liveness of 
+%			 read and write operations. Recall that in our setting, the 
+%			clients are required to decide on one of the configurations proposed by any client, not a configuration consisting of servers proposed in various {\it recon} operations. 
+%			It would be useful to find out  whether it is possible to achieve  liveness of reconfiguration operations of erasure-coded algorithm without relying on a ``consensus-like'' protocol.
+%		}
+%
+	\vc{An important consideration in the design choice of  \ares{}, is to ensure that we gain/retain the advantages that 
+	come with erasure codes -- cost of data storage and communication is low -- while having the flexibility to reconfigure the system. Towards this end,} 
+	we present an erasure-coded implementation
+	of DAPs which satisfy the necessary properties, and are used by 
+	%	
+	%	 we present an  implementation of the DAPs for an erasure-coded
+	%		atomic algorithm, and we show that the DAPs satisfy the necessary properties to make them suitable to be adapted by \ares{}.
+	%	Usage of those DAPs by 
+	%As a consequence of our implementation of DAPs, 
+	\ares{}  to yield
+	%leads us to discover  \treas,  
+	the first reconfigurable, \textit{erasure-coded},  read/write
+	%with  cost-effective storage and communication,  
+	%for emulating shared 
+	atomic storage implementation, where \act{read} and \act{write} 
+	operations complete in \textit{two-rounds}.
+%
+%
+%
+%we present an  implementation of the DAPs that utilize erasure-codes for an erasure-coded
+%		atomic algorithm, and we show that the DAPs satisfy the necessary properties to make them suitable to be adapted by \ares{}.
+%		Usage of those DAPs by 
+%	As a consequence of our implementation of DAPs, \ares{}  becomes
+%		leads us to discover  \treas,  
+%		the first reconfigurable, \textit{erasure-coded},  read/write
+% 		with  cost-effective storage and communication,  
+% 		for emulating shared 
+% 		atomic storage implementation, where each read and write 
+% 		operation complete in \textit{two-rounds}.
+% 		in a message-passing environment and in the presence of crash-failures. 
+% 		%We call the resulted algorithm {\treas}. 
+% 		%in terms of the  DAPs. Thus, 
+% 		We show that the implemented DAPs satisfy the necessary properties, and thus are suitable to 
+% 		be adapted by \ares{} 
+% 		%can adopt the implemented DAPs to 
+% 		yielding the first reconfigurable, \textit{erasure-coded} atomic storage implementation. 
+%		
+		%\blue{
+			%\nn{[Still to examine: Latency analysis]}
+			We provide the atomicity property %of ~\ares{} 
+			and latency analysis for any 
+			%reconfiguration 
+			operation in \ares{}, along with the storage and communication costs resulting from the erasure-coded DAP implementation.
+		%We provide the atomicity property of ~\ares{} and  latency analysis for any reconfiguration operation in \ares.
+		In particular, we specify lower and upper bounds on the communication latency between the service participants,
+		and we provide the necessary conditions 
+		%relation between those bounds 
+		to guarantee the termination of each \act{read/write} operation 
+		while concurrent with \act{reconfig} operations.  
+%		\blue{The \ares{} algorithm supports {\it read}, {\it write} and {\it recon} operations.
+%		%\red{add something about read, write and recon operations live and not-live}
+%		%\blue{
+%		}
+		% \red{adaptive}
+			
+%			\begin{table*}[]
+%				\begin{tabular}{|lccccccc|}
+%					\hline
+%					Algorithm & \#rounds  & \#rounds  & max. &  sev-to-sev &  write-cost & read-cost  &  storage-cost   \\
+%					& write  & read  &  failures & Gossip  &  (bytes) &  (bytes)  &  (bytes)     \\ \hline
+%					{\sc CASGC} \cite{CLMM14} & 3  & 2  & $\lfloor \frac{n - k}{2} \rfloor$  & Yes &  $\frac{n}{k}$ &  $\frac{n}{k}$ &  $(\delta+1)\frac{n}{k} $   \\
+%					{\sc  SODA} \cite{SODA2016} & 2 & 2\footnote{it relies on relay} & $n-k$    & Yes &  $\frac{n^2}{2}$  &$(\delta +1)\frac{n}{k}$  & $\frac{n}{k}$   \\
+%					{\sc ORCAS-A} \cite{DGL08} & 3 &  $\geq 2$ & $\lfloor \frac{n - k}{2} \rfloor$  &  No & $n$ & $n$ & $n$   \\
+%					{\sc  ORCAS-B} \cite{DGL08} & 3  & 3 & $\lfloor \frac{n - k}{2} \rfloor$  &  No &  $\infty$  & $\infty$ & $\infty$ \\
+%					{\sc ABD} \cite{ABD96}& 2  & 2 & $\lceil \frac{n-1}{2} \rceil$  &  No & $n$  & $n$  & $n$  \\
+%					\treas{} (this paper) &  2 & 2 & $\frac{n-k}{2}$  & No &  $\frac{n}{k}$ &  $(\delta +2) \frac{n}{k}$ &  $(\delta +1)\frac{n}{k}$ \\ \hline
+%					%\treasmod & 2 & 2 & & No &  & $\frac{1}{ \lceil \frac{k}{\delta +1} \rceil}$ & \\ \hline
+%				\end{tabular}
+%		
+%				\caption{Performance metrics of  erasure-code based atomicity algorithms \& the replication-based ABD. The $\delta$
+%					parameter is the maximum number of writers concurrent with any read. Desirable to have smaller number of 
+%					rounds of communications for reads and write. Tha maximum number of server failures should be as high as possible. 
+%					Server to server gossip introduces additional messages which can impact latency of operations negatively. The write and 
+%					read costs and storage costs should be as small as possible. }\label{tab:compare}
+%			\end{table*}
+		
+
+	
+% NN: removed the following to avoid confusion
+%%%%%%%%%%%%%%%%%%%
+\remove{
+		For a distributed storage algorithm to deliver higher performance, response time per operation should be as small as 
+possible. One of the criteria of an algorithm to reduce response time is to lower the number of communication rounds between
+client and servers. In addition, lowering the total number of bits transmitted per operation helps decrease the time of operations. 
+Although the currently known erasure-coded atomic memory algorithms achieve substantially lower storage  and 
+communication costs per operation, \nn{compared to their replication-based counterparts},  the number of communication rounds
+in the erasure-code based algorithms are higher. \treas{} is  the first erasure-coded, atomic memory algorithm 
+for asynchronous environments with clients and servers crashes, where each operation completes in two rounds of communication
+between the client and a set of servers. 
+}
+%%%%%%%%%%%%%%%%%%%%%%%
+%We present \treas,  the first \textit{two-round} erasure code-based  MWMR algorithm, with  cost-effective storage and communication, 
+%		for emulating shared atomic read/write memory under a message-passing environment and in the presence of crash-failures. 
+%Next we present {\treasmod} which further lowers storage cost by changing the coding parameters.
+% Moreover, 		our algorithms do not perform server-to-server gossip. 
+Table~\ref{tab:compare} compares \ares{} with a
+%performance metrics of \treas{} with  a 
+few well-known erasure-coded  and replication-based (static and reconfigurable) atomic memory algorithms. 
+%and also the static and reconfigurable replication-based algorithms.
+From the table we observe that \ares{} is the only algorithm to combine a dynamic behavior with the use of erasure codes,
+%and also the only to allow adaptive change of the atomic algorithm per configuration, 
+\kmk{while reducing the storage and communcation costs associated with
+the read or write operations.}
+%\kmkremove{On the downside, \ares{} still relies 
+%on consensus to achieve reconfiguration, something however that does not affect its correctness and enables infinite 
+%reconfigurations.}  
+\kmk{Moreover, in ~\ares{} the  number of rounds per write and read is at least as good as in any of the remaining algorithms.}
+%, indicate the round-trips performed 
+%when no reconfiguration is concurrent with a read/write operation.
+%Note that it is preferable to have an algorithm that does not have server-to-server gossip, as it would decrease the number of messages.
+% \red{how is it different from RADON, no recover, no N1 assumptions required}
+%}
+
+		
+%client as the possible bottleneck.
+%		
+%Using these primitives, we are able to prove the safety property (atomicity)  of an execution of \ares{} that involves ongoing reconfiguration operations. 
+%
+%Next, we  present \treas,  the first \textit{two-round} erasure code-based  MWMR algorithm, with  cost-effective storage and communication, 
+%for emulating shared atomic read/write memory under a message-passing environment and in the presence of crash-failures. 
+%We prove safety and liveness conditions for \treas. We also provide some network  conditions on liveness of operations based on latency analysis.
+%
+%		\myparagraph{ $(d)$ {\it ARES-OPT.}}  Finally, we describe an optimization over the \ares{} and \treas{} algorithms, that achieves further reduction on the communication costs by
+%		%a new algorithm \ares-\treas, where we use a modified version of  \treas{} as the underlying atomic memory algorithm in every configuration and  modify \ares{}, so that  
+%		allowing data to be transferred from one configuration to another directly, avoiding transferring the value to intermediate configurations 
+%		that may be discovered during a reconfiguration operation. 
+
+%As the DAP of all the algorithms we transformed 
+%satisfy both C1 and C2, then any configuration can use the DAP of any of those algorithms.  
+
+%	\item  implement atomic read/write objects in asynchronous message passing environments, based on   three primitives
+%	procedures {\sc put-data}, {\sc get-data}, {\sc get-tag}.
+%	
+%	\item We present a new reconfiguration algorithm that can add new servers and also change the underlying storage algorithm
+
+%\item A new atomic read/write storage implementation using erasure coded redundancy for the static case. 
+%\end{enumerate}
+
+
+%Finally, we provide experimental results from 
+%our implementation and subsequent deployment of our algorithms in a openstack cloud-platform.
+	
+
+\myparagraph{Document Structure.}
+%The remainder of the manuscript consists of the following sections. 
+Section~\ref{model}, presents the model assumptions 
+%for our setting 
+and Section~\ref{ssec:dap}, the DAP  primitives.  
+ In Section~\ref{sec:ares}, we present the implementation of the reconfiguration and read/write 
+ protocols in \ares{} using the DAPs.
+% our \ares{} framework and we describe the implementation of the reconfiguration and read/write 
+%protocols using the DAPs. 
+%for emulating shared atomic memory with erasure-codes where the system can undergo  reconfiguration, while it is live. 
+ In Section~\ref{ssec:dap:impl}, we present an erasure-coded implementation of a set of  DAPs, which 
+ can be used in every configuration of 
+ %completes the description of 
+ the \ares{} algorithm.
+ Section~\ref{sec:ares_safety} provides operation latency and cost analysis, and Section 
+ \ref{sec:dap:flexible} the DAP flexibility. 
+%of read, write and reconfiguration operations.
+%In Section~\ref{sec:transfer}, we describe our optimization algorithm, we call  \aresopt{}. %algorithm.
+ %Finally, in , 
+ We conclude our work in Section~\ref{sec:conclusions}.
+  Due to lack of space omitted proofs can be found in 
+  %the extended version of our paper~
+  \cite{ARES:Arxiv:2018}.
+
+

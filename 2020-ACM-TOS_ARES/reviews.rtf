@@ -1,0 +1,123 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red27\green128\blue255;\red27\green128\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c11095\c58865\c100000;\cssrgb\c11095\c58865\c100000;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww17040\viewh12700\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f0\fs24 \cf0 ----------------------- REVIEW 1 ---------------------\
+PAPER: 403\
+TITLE:  ARES: Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage\
+AUTHORS: Nicolas Nicolaou, Viveck Cadambe, N Prakash, Kishori Konwar, Muriel Medard and Nancy Lynch\
+\
+Overall evaluation: 0 (borderline paper)\
+\
+----------- Overall evaluation -----------\
+The article may be improved connecting the work with some literature of the state of the art. The connection with current methods [1] and efficient infrastructures [2] should be clarified to connect the approach to a larger system. \
+\
+[1] Song H, Li W, Shen P, Vasilakos A. Gradient-driven parking navigation using a continuous information potential field based on wireless sensor network. Information Sciences, 408(C), 100-114, DOI information: 10.1016/j.ins.2017.04.042, OCT 2017. \
+[2]Fan, X., Song, H., Fan, X., & Yang, J. (1939). Imperfect information dynamic stackelberg game based resource allocation using hidden markov for cloud computing. IEEE Transactions on Services Computing, vol:11(1): 78-89, Feb. 2016, doi: 10.1109/TSC.2016.2528246.\
+\
+\cf2 NN: @Kishori, @Viveck, @Prakash, can you check this? \cf0 \
+\
+\
+----------------------- REVIEW 2 ---------------------\
+PAPER: 403\
+TITLE:  ARES: Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage\
+AUTHORS: Nicolas Nicolaou, Viveck Cadambe, N Prakash, Kishori Konwar, Muriel Medard and Nancy Lynch\
+\
+Overall evaluation: 0 (borderline paper)\
+\
+----------- Overall evaluation -----------\
+The paper is generally well written even if some points need some improvements to help the reader in following the presentation:\
+\
+- Section 2: why reconfiguration is done by clients and not by servers themselves? Are reconfiguration clients disjoint from readers and writers? it sound strange to me that a user of the storage knows when its time to reconfigure, this is something that an administrator is more likely to do. Please clarify this point.\
+\
+\cf2 NN: I think in our minds a reconfigurer can also be the the administrator of the system that attempts to introduce new servers or remove obsolete servers. Maybe we can add a footnote to say something like this: \'93A system administrator can be considered as  a reconfigurer that attempts to introduce new and/or decommission faulty servers.\'93 \cf0  \
+\
+- Section 2, "Configurations": The author say "each configuration is used to describe the way the servers are grouped into intersecting sets". How does a configuration describe quorums? Do processes know the configuration? Do processes know the composition of its quorums?\
+\
+\cf2 NN: Here we do say that a configuration is a data type. So i think the user was a bit confused with how configurations are defined in previous works. Also processes discover new configurations and this is defined in our algorithm. They just have to know the initial configuration. Maybe we should note that in the text. What do you think? \cf0 \
+\
+- Section 2 "Executions": What is the difference between a process and a processor?  \
+\
+\cf2 NN: Fixed. Should have been \'93process\'94.\cf0 \
+\
+- Section 2 "Executions": What do you mean with "operation" when you define the notion of "well-formed execution"?\
+\
+\cf2 NN: The reviewer is right here as we haven\'92t introduced the operations up to this point. We refer to well-formedness again in the next paragraph so i removed the reference here. Fixed!\cf0 \
+\
+- Section 2: "well-formed execution" seems to be defined in a different way in paragraph "Executions" and in paragraph "Reconfigurable Atomic Read/write Objects". In the first case it seems that you have exactly one operation at each time; in the second, it seems that you may have at most one operation. \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: I am not sure how the reviewer got this impression here. Anyway i rephrased a bit!\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+- Section 2, "Reconfigurable Atomic Read/write Objects": I do not understand A2.\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: OK. I clarified this property a bit. Was referring to any operation while \\Pi should contain only read/write operations. \
+This was not specified in the original submission. \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+- Section 2, "Reconfigurable Atomic Read/write Objects": It seems to me that trough A1-A3 you are implicitly saying that you want linearizability? Is it correct? If yes, why not just saying that you are requiring linearizability? If not, where is the difference with linearizability?\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: Added linearizability in the parenthesis to address this comment. Do you think we need something more? \
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 - Section 2, "Storage and Communication Costs": the name of the metrics you selected are misleading. \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: I am not sure if we need to do something for this. Didn\'92t change anything. \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+- Section 3: it seems to me that the DAP object used here is basically a sequencer. Is it correct? If yes, please add this intuition is correct, why not saying it directly?\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: I think that the DAPs do not implement a sequencer. A sequencer may be implied only if the Property 1 is satisfied and even in that case we do provide guarantees when the DAP are not concurrent. So i think we should not make any change for this comment. \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+- Section 3: to justify the modular approach, the authors say that using modules you can choose the best one in every configuration. Why should I change the DAP implementation at run-time? I think this argument is weak. From my point of view, the modular approach is winning as it relies on interfaces and thus it allows you adapt and choose the best implementation for every environment; however, one you selected the best for your system, why should you change it in time?\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: Added some justification why one may need to switch coding scheme but also added the claim that the coding algorithm can be application dependent. \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+- Section 4 and 5: The ARES and DAP protocols seems adaptations/extensions of RAMBO and other ECDDS. It would be nice to have an explanation of how and when they are working differently and/or similarly.\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: Added some discussion at the end of section 4 which we can discuss. \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+\
+----------------------- REVIEW 3 ---------------------\
+PAPER: 403\
+TITLE:  ARES: Adaptive,  Reconfigurable,  Erasure coded, atomic  Storage\
+AUTHORS: Nicolas Nicolaou, Viveck Cadambe, N Prakash, Kishori Konwar, Muriel Medard and Nancy Lynch\
+\
+Overall evaluation: 0 (borderline paper)\
+\
+----------- Overall evaluation -----------\
+1)   This paper lacks of a mathematical demonstration about the bound to explain the superiority of this paper and the rationality of the ARES algorithm.\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: We cannot add any proofs due to lack of space. Didn\'92t do anything for this. \
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 2)   The authors should conduct some experimental data to analyze the storage and communication costs of the ARES algorithm.\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: Indeed that would be nice but due to lack of current implementation and space limitations we cannot add any experimental results now. This should go to the journal version. Didn\'92t do anything for this. \
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 3)   This paper needs to show some simple examples and flow diagrams to better illustrate the process of the proposed algorithm. Otherwise, the algorithms are difficult for readers to understand. \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: An illustration and an example of the reconfiguration procedure already exists in the paper. Do not have space for further examples/figures. \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \
+4)   In this paper, the designed ARES and DAP protocols are just adaptations/extensions from existing RAMBO and other ECDDS. As such, the authors need to clarify both the similarities and differences between these works.\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf3 NN: Same as the comment above.}
