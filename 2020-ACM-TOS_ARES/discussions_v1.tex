@@ -65,7 +65,205 @@ The following result shows
  %as in Fig. ~\ref{algo:atomicity:generic1} satisfies atomic read and write and is live if the  primitive functions are live in $\xi$.
  is atomic and live if each DAP \nn{invocation terminates} in $\EX$ \nn{under the failure model $c.\mathcal{F}$}.
  \end{theorem}
- A number of known tag-based algorithms that implement atomic read/write objects 
-	(e.g., ABD \cite{ABD96}, \fast \cite{CDGL04} -- see \cite{ARES:Arxiv:2018}), can be expressed 
-	in terms of DAP.	
+ \begin{proof}
+ We  prove the atomicity by proving properties $A1$, $A2$ and $A3$ presented in Section \ref{model} for any execution of the algorithm.
+					
+	\emph{Property $A1$}: Consider two operations $\phi$ and $\pi$ such that $\phi$ completes before $\pi$ is invoked. 
+	We need to show that it cannot be  the case that $\pi \prec \phi$. We break our analysis into the following four cases:
+
+	Case $(a)$: {\em Both $\phi$ and $\pi$ are writes}. The $\daputdata{c}{*}$ of $\phi$ completes before 
+	$\pi$ is invoked. 
+	%which implies that by well-formedness 
+	By property {\bf C1} the tag $\tg{\pi}$ returned by the $\dagetdata{c}$ at $\pi$ is 
+	at least as large as $\tg{\phi}$. Now, 
+	%since $\tg{\pi}$ is larger than $t_{\phi}$, by the steps of 
+	since $\tg{\pi}$ is incremented by the write operation then $\pi$ puts a tag $\tg{\pi}'$ such that
+	$\tg{\phi} < \tg{\pi}'$ and hence we cannot have $\pi \prec \phi$.
+	
+	Case $(b)$: {\em $\phi$ is a write and  $\pi$ is a read}. In execution $\EX$ since 
+$\daputdata{c} {\tup{t_{\phi}, *}}$ of $\phi$ completes 
+	before the $\dagetdata{c}$ of $\pi$ is invoked, by 
+	%the well-formedness 
+	property {\bf C1} the tag $\tg{\pi}$ obtained from the above
+	$\dagetdata{c}$ is at least as large as $\tg{\phi}$. Now $\tg{\phi} \leq \tg{\pi}$ implies that we cannot have $\pi \prec \phi$.
+	
+	Case $(c)$: {\em $\phi$ is a read and  $\pi$ is a write}.  Let the id of the writer that invokes $\pi$ we $w_{\pi}$.  
+	The 
+$\daputdata{c}{\tup{\tg{\phi}, *}}$  call of $\phi$ completes
+	before  $\dagettag{c}$ of $\pi$ is initiated. Therefore, by 
+	%the well-formedness 
+	property {\bf C1} %of data-primitives the above 
+	$\act{get-tag}(c)$ returns $\tg{}$ such that, $\tg{\phi} \leq \tg{}$. Since $\tg{\pi}$ is equal to $inc(\tg{})$ 
+	by design of the algorithm, hence $\tg{\pi} > \tg{\phi}$ and we cannot have $\pi \prec \phi$.
+	
+	Case $(d)$: {\em Both $\phi$ and $\pi$ are reads}. In execution $\EX$  
+the $\daputdata{c}{\tup{t_{\phi}, *}}$ is executed as a part of $\phi$ and 
+	completes before $\dagetdata{c}$ is called in $\pi$. By 
+	%the well-formedness
+	 property {\bf C1} of the data-primitives, 
+	we have $\tg{\phi} \leq \tg{\pi}$ and hence we cannot have $\pi \prec \phi$.
+	
+	\emph{Property $A2$}: Note that because the tag set $\tsSet$ is well-ordered we can show that A2 holds by first showing that
+	every write has a unique tag. This means that any two pair of writes can be ordered. 
+	Note that 
+	a read can be ordered w.r.t. any write operation trivially if the respective tags are different, and by definition, if the 
+	tags are equal the write is ordered before the read.
+	
+	Observe that two tags generated from different writers are necessarily distinct because of the 
+	id component of the tag. Now if the operations, say $\phi$ and $\pi$ are writes  from the same writer then, by 
+	well-formedness property, the second operation will witness a higher integer part in the tag 
+	%is invoked after the first completes, say without loss of generality $\phi$ completes before 
+	%$\pi$ is invoked.   In that case the integer part of the tag of $\pi$ is higher 
+	%because the well-formedness 
+	by property  {\bf C1}, and since the $\dagettag{c}$  is followed by $\daputdata{c}{*}$. Hence $\pi$ is ordered after $\phi$. 
+	
+	\emph{Property $A3$}:  By {\bf C2} the $\dagetdata{c}$ may return a tag $\tg{}$, only 
+	when there exists an operation $\op$ that invoked a $\daputdata{c}{\tup{\tg{},*}}$. Otherwise it returns the initial value. Since a write is the only operation to put a new tag $\tg{}$ in the system then Property $A3$ follows from {\bf C2}.
+ \end{proof}
+	
+	\subsection{Representing  Known Algorithms in terms of data-access primitives}
+\label{ssec:generic}
+
+A number of known tag-based algorithms that implement atomic read/write objects 
+	(e.g., ABD \cite{ABD96}, \fast \cite{CDGL04} ), can be expressed 
+	in terms of DAP. In this subsection we demonstrate how we can transform the very celebrated ABD algorithm \cite{ABD96}.
+
+\paragraph{\mwABD{} Algorithm.}
+The multi-writer version of the ABD can be transformed to the generic algorithm Template $A$. Algorithm \ref{algo:dap:abd}
+illustrates the three DAP for the ABD algorithm. The $\act{get-data}$ primitive encapsulates the query phase 
+of \mwABD{}, while the $\act{put-data}$ primitive encapsulates the propagation phase of the algorithm. 
+%Thus, given a configuration $c\in\confSet$ the DAPs in the transformation of ABD are implemented as follows:
+
+\begin{algorithm}[!h]
+	%\hrule \F
+	\begin{algorithmic}[2]
+		\begin{multicols}{2}{\scriptsize
+				\Part{Data-Access Primitives at process $\pr$}
+				\Procedure{c.put-data}{$\tup{\tg{},v})$}
+				\State {\bf send} $(\text{{\sc write}}, \tup{\tg{},v})$ to each $s \in \servers{c}$
+				\State {\bf until} $\exists \quo,  \quo \in \quorums{c}$ s.t. $\pr$ receives {\sc ack} from $\forall s\in\quo{}$
+				\EndProcedure
+				
+				\Statex				
+				
+				\Procedure{c.get-tag}{}
+				%	\State {\bf send} $(\text{\act{query}},\rdr)$ to every server $s\in \bigcup_{cseq[i]}members(\qs_{cseq[i].conf})$
+				\State {\bf send} $(\text{{\sc query-tag}})$ to each  $s\in \servers{c}$
+				\State {\bf until}    $\exists \quo{}, \quo{}\in\quorums{c}$ s.t. 
+				\State\TT$\pr$ receives $\tup{\tg{s},v_s}$ from $\forall s\in\quo{}$ 
+				\State $\tg{max} \gets \max(\{\tg{s} : \pr \text{ received } \tup{\tg{s},v_s} \text{ from } s \})$
+				\State {\bf return} $\tg{max}$
+				\EndProcedure
+				
+				\Statex
+				
+				\Procedure{c.get-data}{}
+				%	\State {\bf send} $(\text{{\sc query}},\rdr)$ to every server $s\in \bigcup_{cseq[i]}members(\qs_{cseq[i].conf})$
+				\State {\bf send} $(\text{{\sc query}})$ to each  $s\in \servers{c}$
+				\State {\bf until}    $\exists \quo{}, \quo{}\in\quorums{c}$ s.t. 
+				\State\TT $\pr$ receives $\tup{\tg{s},v_s}$ from $\forall s\in\quo{}$ 
+				\State $\tg{max} \gets \max(\{\tg{s} : \rdr_i \text{ received } \tup{\tg{s},v_s} \text{ from } s \})$
+				\State {\bf return} $\{\tup{\tg{s},v_s}:\tg{s}=\tg{max} \wedge ~\pr \text{ received } \tup{\tg{s},v_s} \text{ from } s\}$
+				\EndProcedure
+				\EndPart
+			}\end{multicols}
+				
+			\\\hrulefill 
+			
+			\begin{multicols}{2}{\scriptsize
+				\Part{Primitive Handlers at server $s_i$ in configuration $c$}
+				\Receive{{\sc query-tag}}{} %\Comment{Called upon reception of a message}
+				%\State $\act{handle-get-tag(c_k)}$
+				\State send $\tg{}$ to $q$
+				\EndReceive
+				
+				\Statex
+				
+				\Receive{{\sc query}}{}
+				%\State $\act{handle-get-data(c_k)}$
+					\State send $\tup{\tg{}, v}$ to $q$
+				\EndReceive
+				
+				\Statex
+				\Statex
+				
+				\Receive{{\sc write}, $\tup{\tg{in}, v_{in}}$}{}
+				%\State $\act{handle-put-data(c_k)}$
+					\If {$\tg{in}> \tg{}$} 	\label{line:server:tg-comparison}
+						\State  $\tup{\tg{},v}\gets \tup{\tg{in},v_{in}}$ \label{line:server:update}
+					\EndIf
+					\State  send  {\sc ack} to $q$ 	\label{line:server:reply}
+				\EndReceive
+				\EndPart
+				
+		}\end{multicols}	
+	\end{algorithmic}
+	%\hrule \B
+	\caption{Implementation of DAP for ABD at each process $\pr$ using configuration $c$}
+	\label{algo:dap:abd}
+\end{algorithm} 
+
+Let us now examine if the primitives satisfy properties \textbf{C1} and \textbf{C2} of Property \ref{property:dap}.
+We begin with a lemma that shows the monotonicity of the tags at each server.
+
+\begin{lemma} 
+	\label{lem:server:tag:monotonic}
+	Let $\st$ and $\st'$ two states in an execution $\EX$ such that $\st$ appears before $\st'$ in $\EX$.
+	Then for any server $s\in\srvSet$ it must hold that $\atT{s.tag}{\st}\leq\atT{s.tag}{\st'}$.
+\end{lemma}
+
+\begin{proof}
+	According to the algorithm, a server $s$ updates its local tag-value pairs when it receives a message
+	with a higher tag. So if $\atT{s.tag}{\st}=\tau$ then in a state $\st'$ that appears after $\st$ in $\EX$,
+	$\atT{s.tag}{\st'}\geq \tau$.
+\end{proof}
+
+In the following two lemmas we show that property \textbf{C1} is satisfied, that is if a $\act{put-data}$ action completes,
+then any subsequent $\act{get-data}$ and $\act{get-tag}$ actions will discover a higher tag than the one propagated 
+by that $\act{put-data}$ action.
+
+\begin{lemma}
+	\label{lem:putdata:gettag}
+	Let $\phi$ be a $\daputdata{c}{\tup{\tau,v}}$ action invoked by $\pr_1$ and $\gamma$ be a $\dagettag{c}$ action
+	invoked by $\pr_2$ in a configuration $c$, such that 
+	$\phi\bef\gamma$ in an execution $\EX$ of the algorithm. Then $\gamma$ returns a tag $\tau_\gamma \geq \tau$. 
+\end{lemma}
+
+\begin{proof}
+	The lemma follows from the intersection property of quorums. In particular, during the $\daputdata{c}{\tup{\tau,v}}$ 
+	action, $\pr_1$ sends the pair $\tup{\tau,v}$ to all the servers in $\servers{c}$ and waits until all the servers in 
+	a quorum $Q_i\in\quorums{c}$ reply. When those replies are received then the action completes. 
+	
+	During a $\dagetdata{c}$ action on the other hand, $\pr_2$ sends query messages to all the servers in $\servers{c}$ 
+	and waits until all servers in a quorum $Q_j\in\quorums{c}$ (not necessarily different than $Q_i$) reply. By definition 
+	$Q_i \cap Q_j\neq\emptyset$, thus any server $s\in Q_i\cap Q_j$ reply to both $\phi$ and $\gamma$ actions.  
+	By Lemma \ref{lem:server:tag:monotonic} and since $s$ received a tag $\tau$, then $s$ replies to $\pr_2$ with a tag
+	$\tau_s\geq\tau$. Since $\gamma$ returns the maximum tag it discovers then $\tau_\gamma \geq \tau_s$. Therefore
+	$\tau_\gamma \geq \tau$ and this completes the proof.
+\end{proof}
+
+With similar arguments and given that each value is associated with a unique tag then we can show the following lemma.
+
+\begin{lemma}
+	\label{lem:putdata:getdata}
+	Let $\pi$ be a $\daputdata{c}{\tup{\tau,v}}$ action invoked by $\pr_1$ and $\phi$ be a $\dagetdata{c}$ action
+	invoked by $\pr_2$ in a configuration $c$, such that $\pi\bef\phi$ in an execution $\EX$ of the algorithm. 
+	Then $\phi$ returns a tag-value  $\tup{\tau_\phi, v_\phi}$
+	such that $\tau_\phi \geq \tau$. 
+\end{lemma}
+
+Finally we can now show that property \textbf{C2} also holds. 
+
+\begin{lemma}
+	If $\phi$ is a $\dagetdata{c}$ that returns $\tup{\tg{\pi}, v_\pi } \in \tsSet \times \valSet$, 
+	then there exists $\pi$ such that $\pi$ is a $\daputdata{c}{\tup{\tg{\pi}, v_{\pi}}}$ and $\phi \not \rightarrow \pi$.
+\end{lemma}
+
+\begin{proof}
+	This follows from the facts that (i) servers set their tag-value pair to a pair received by a $\act{put-data}$ action, and (ii) 
+	a $\act{get-data}$ action returns a tag-value pair that it received from a server. So if a $\dagetdata{c}$  operation $\phi$ 
+	returns a tag-value pair $\tup{\tg{\pi}, v_\pi }$, there should be a server $s$  that replied to that operation with 
+	$\tup{\tg{\pi}, v_\pi }$,  and $s$ received $\tup{\tg{\pi}, v_\pi }$ from some $\daputdata{c}{\tup{\tg{\pi}, v_\pi }}$
+	action, $\pi$. Thus, $\pi$ can proceed or be concurrent with $\phi$, and hence $\phi\not\bef \pi$.
+\end{proof}
 
