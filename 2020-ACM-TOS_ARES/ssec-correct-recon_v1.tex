@@ -1,4 +1,11 @@
-In this section we analyze the properties that we can achieve through our reconfiguration algorithm. 
+In this section we analyze the properties that we can achieve through our reconfiguration algorithm. In high-level, we do show that the following properties are preserved: 
+\begin{itemize} 
+\item[i] {\bf configuration uniqueness:} the configuration sequences in any two processes have identical configuration at any place $i$,
+\item[ii] {\bf sequence prefix:} the configuration sequence witnessed by an operation is a prefix of the sequence witnessed by any succeeding operation, and 
+\item[iii] {\bf sequence progress:} if the configuration with index $i$ is finalized during an operation, then a configuration $j$, for $j\geq i$, will be finalized
+for a succeeding operation.
+\end{itemize}
+
 The first lemma shows that any two configuration sequences have the same configuration identifiers
 in the same indexes. 
 
