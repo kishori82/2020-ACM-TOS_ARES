@@ -33,8 +33,15 @@
 % \end{theorem}
 
 Given the properties satisfied by the reconfiguration algorithm of \ares{} 
-and assuming that the DAP used satisfy Property~\ref{property:dap}, as presented
-in Section \ref{ssec:dap}, then  we have the following result. 
+% and assuming that the DAP used satisfy Property~\ref{property:dap}, as presented
+% in Section \ref{ssec:dap}, then  we have the following result. 
+in any execution, we can now proceed to examine whether our algorithm satisfies the safety (atomicity) conditions. The
+propagation of the information of the distributed object is achieved using the get-tag, get-data, and
+put-data actions. We assume that the DAP used satisfy  Property~\ref{property:dap} as presented in
+Section \ref{ssec:dap}, and we will show that, given such assumption, \ares{} satisfies atomicity.
+
+We begin with a lemma stating that if a reconfiguration operation retrieves a configuration
+sequence of length $k$ during its $\act{read-config}$ action, then it installs/finalizes the $k + 1$ configuration in the global configuration sequence.
 
 \begin{lemma}%{\bf 
 	\label{lem:recon:incremental}
@@ -50,16 +57,22 @@ in Section \ref{ssec:dap}, then  we have the following result.
 
 \begin{proof}
 	This lemma follows directly from the implementation of the $\act{reconfig}$ operation. 
-	Let $\rho$ be a reconfiguration operation $\act{reconfig}(c)$. At first, $\rho$ invokes a
+	Let $\op$ be a reconfiguration operation $\act{reconfig}(c)$. At first, $\op$ invokes a
 	$\act{read-config}$ to retrieve a latest value of the global configuration sequence, $\cvec{\rec}{\state_1}$, 
-	in a state $\state_1$ in $\EX$. During the $\act{add-config}$ action, $\rho$ proposes the addition of $c$, 
-	and appends at the end of $\cvec{\rec}{\state_!}$ the decision $d$ of the consensus protocol. 
-	Therefore, if $\cvec{\rec}{\state_1}$ is extended by $\tup{d, P}$ (Line Alg.~\ref{algo:reconfigurer}:\ref{line:addconfig:assign}), and hence the 
+	in the state $\state_1$ in $\EX$. During the $\act{add-config}$ action, $\op$ proposes the addition of $c$, 
+	and appends at the end of $\cvec{\rec}{\state_1}$ the decision $d$ of the consensus protocol. 
+	Therefore, if $\cvec{\rec}{\state_1}$ is extended by $\tup{d, P}$ (Line A~\ref{algo:reconfigurer}:\ref{line:addconfig:assign}), and hence the 
 	$\act{add-config}$ action returns a configuration sequence $\cvec{\rec}{\state_1'}$ with length 
 	$\nu(\cvec{\rec}{\state_1'})= \nu(\cvec{\rec}{\state_1}) + 1$. As $\nu(\cvec{\rec}{\state_1'}$ does not change 
 	during the $\act{update-config}$ action, then $\cvec{\rec}{\state_1'}$ is passed to the $\act{finalize-config}$ action at state $\state_2$,
 	and hence $\cvec{\rec}{\state_2}=\cvec{\rec}{\state_1'}$. Thus, $\nu(\cvec{\rec}{\state_2})=\nu(\cvec{\rec}{\state_1'})= \nu(\cvec{\rec}{\state_1}) + 1$ and the lemma follows.
 \end{proof}
+
+The next lemma states that only some reconfiguration operation $\op$ may finalize a configuration $c$ at index $j$ in a configuration sequence $\pr.cseq$ at any process $\pr$.
+%, is finalized by some . 
+To finalize $c$, the lemma shows that $\op$ must witness a configuration
+sequence such that its last finalized configuration appears at an index $i<j$ in the configuration sequence $\pr.cseq$. In other words,  reconfigurations always finalize configurations that are ahead from their
+latest observed final configuration, and it seems like ``jumping'' from one final configuration to the next.
 
 \begin{lemma} %{\bf 
 \label{lem:recon:jump}
@@ -67,8 +80,8 @@ Suppose $\EX$ is an execution of \ares{}.
 %Let $\cvec{*}{\state}$ be a configuration sequence returned by any $\act{read-config}$ action at state $\state$ in $\EX$,
  %and let $\cvec{*}{\state}[j].status = F$, for some $0 < j \leq \nu( \cvec{*}{\state})$. 
  For any state $\state$ in $\EX$, if $\status{\cvec{\pr}{\state}[j]} = F$ for some process $\pr\in\idSet$, 
- then there exists a $\act{reconfig}$ action $\rho$ by a reconfigurer $\rec\in\recSet$, such that
- (i) $\rec$ invokes $\act{finalize-config}(\cvec{\rec}{\state'})$ during $\rho$ at some state $\state'$ in $\EX$, 
+ then there exists a $\act{reconfig}$ operation $\op$ by a reconfigurer $\rec\in\recSet$, such that
+ (i) $\rec$ invokes $\act{finalize-config}(\cvec{\rec}{\state'})$ during $\op$ at some state $\state'$ in $\EX$, 
  (ii) $\nu(\cvec{\rec}{\state'}) = j$, and (iii) $\mu(\cvec{\rec}{\state'}) < j$. 
 % 
 % there exists a $\act{recon}$ operation $\rho$ that introduces $\cvec{}{}[j]$ 
@@ -86,14 +99,14 @@ Suppose $\EX$ is an execution of \ares{}.
 	Server $s$ sets the status of a configuration $c$ to $F$ only if it receives a message that contains $\tup{c,F}$
 	(Line A\ref{algo:server}:\ref{line:server:finalize}). So, (ii) is possible only if $c$ is finalized during a $\act{reconfig}$ operation. 
 	
-	Let, w.l.o.g., $\rho$ be the first reconfiguration operation that finalizes $\config{\cvec{\pr}{\state}[j]}$. 
+	Let, w.l.o.g., $\op$ be the first reconfiguration operation that finalizes $\config{\cvec{\pr}{\state}[j]}$. 
 	To do so, process $\rec$
-	invokes $\act{finalize-config}(\cvec{\rec}{\state_1'})$ during $\rho$, at some state $\state'$ that appears
+	invokes $\act{finalize-config}(\cvec{\rec}{\state_1'})$ during $\op$, at some state $\state'$ that appears
 	before $\state$ in $\EX$. By Lemma \ref{lem:unique}, $\config{\cvec{\pr}{\state}[j]} = \config{\cvec{\rec}{\state'}[j]}$.
 	Since, $\rec$ finalizes $\cvec{\rec}{\state'}[j]$, then  this is the last entry of $\cvec{\rec}{\state'}$ and 
 	hence $\nu(\cvec{\rec}{\state'}) = j$. 
 	Also, by Lemma \ref{lem:recon:jump} it follows that the 
-	$\act{read-config}$ action of $\rho$ returned a configuration $\cvec{\rec}{\state''}$ in some state 
+	$\act{read-config}$ action of $\op$ returned a configuration $\cvec{\rec}{\state''}$ in some state 
 	$\state''$ that appeared before $\state'$ in $\EX$, such that $\nu(\cvec{\rec}{\state''}) < \nu(\cvec{\rec}{\state'})$.
 	Since by definition, $\mu(\cvec{\rec}{\state''})\leq\nu(\cvec{\rec}{\state''})$, then $\mu(\cvec{\rec}{\state''}) < j$.
 	However, since only $\tup{c, P}$ is added to $\cvec{\rec}{\state''}$ to result in $\cvec{\rec}{\state'}$,
@@ -101,16 +114,27 @@ Suppose $\EX$ is an execution of \ares{}.
 	and the lemma follows.
 \end{proof}
 
+
+We now reach an important lemma of this section. By \ares{}, before a read/write/reconfig operation completes 
+it propagates the maximum tag it discovered by executing the $\act{put-data}$ action in the last 
+configuration of its local configuration sequence (Lines A\ref{algo:reconfigurer}:\ref{line:addconfig:put}, A\ref{algo:writer}:\ref{line:writer:prop}, A\ref{algo:writer}:\ref{line:reader:prop}). 
+When a subsequent operation is invoked, it reads the latest configuration 
+sequence by beginning from the last finalized configuration in its local sequence and invoking $\act{read-data}$ to
+all the configurations until the end of that sequence. The lemma shows that the latter operation 
+will retrieve a tag which is higher than the tag used in the $\act{put-data}$ action of any preceding operation.
+
+% For the following proof we use the notation $\nu^c(\cvec{\pr}{\st}) = \config{\cvec{\pr}{\st}[\nu(\cvec{\pr}{\st})]}$. In other words, $\nu^c(\cvec{\pr}{\st})$ denotes 
+% the last configuration in the sequence $\cvec{\pr}{\st}$.
+
 \begin{lemma}%{\bf  
 	\label{lem6}
 	Let $\pi_1$ and $\pi_2$ be two completed read/write/reconfig  operations invoked by processes
 	$p_1$ and $p_2$ in $\idSet$,  in an execution  $\EX$ of \ares{}, such that, $\pi_1\bef\pi_2$. 
 	If $c_1.\act{put-data}(\tup{\tg{\op_1}, v_{\op_1}})$ is the last \act{put-data} action of $\pi_1$
-	and $\state_2$ is the state in $\EX$, after the completion of the first $\act{read-config}$ action of $\pi_2$, 
-	then there exists a $c_2.\act{put-data}(\tup{\tg,v})$ action in some configuration 
-	$c_2 = \config{\cvec{\pr_2}{\state_2}[i]}$, for $\mu(\cvec{\pr_2}{\state_2}) \leq i \leq
-	\nu(\cvec{\pr_2}{\state_2})$, such that (i) it completes in a state $\state'$ before $\state_2$ in $\EX$, 
-	and (ii) $\tg{}\geq\tg{\op_1}$.
+	and $\state_2$ is the state in $\EX$ after the completion of the first $\act{read-config}$ action of $\pi_2$, 
+	then there exists a $c_2.\act{put-data}(\tup{\tg{},v})$ action in some configuration 
+	$c_2 = \config{\cvec{\pr_2}{\state_2}[k]}$, for $\mu(\cvec{\pr_2}{\state_2}) \leq k \leq
+	\nu(\cvec{\pr_2}{\state_2})$, such that (i) it completes in a state $\state'$ before $\state_2$ in $\EX$, and (ii) $\tg{}\geq\tg{\op_1}$.
 \end{lemma}
 
 \begin{proof}
@@ -121,7 +145,7 @@ $\state'_1$ be the state in $\EX$
 %immediately 
 following the response step of $\pi_1$. Since any operation executes $\act{put-data}$ 
 on the last discovered configuration then $c_1$ is the last configuration found in 
-$\cvec{\pr_1}{\state_1}$, and hence $c_1 =  \nu^c(\cvec{\pr_1}{\state_1})$.  
+$\cvec{\pr_1}{\state_1}$, and hence $c_1 =  \config{\cvec{\pr_1}{\st_1}[\nu(\cvec{\pr_1}{\st_1})]}$. %\nu^c(\cvec{\pr_1}{\state_1})$.  
 By Lemma~\ref{lem:final:monotonic}   we have
 $\mu(\cvec{\pr_1}{\state_1}) \leq \mu(\cvec{\pr_1}{{\state}'_1})$ 
 and by Lemma~\ref{lem:finalconf} we have 
@@ -129,24 +153,24 @@ $\mu(\cvec{\pr_1}{{\state}'_1}) \leq \mu(\cvec{\pr_2}{{\state}_2})$, since $\pi_
 action) is invoked after ${\state}'_1$ (and thus after the last \act{read-config} action during $\op_1$). %, i.e., after $\pi_1$ completes  and 
 Hence, combining the two implies that
 $\mu(\cvec{\pr_1}{\state_1}) \leq \mu(\cvec{\pr_2}{{\state}_2})$.   Now from the last implication and the first statement we have $\mu(\cvec{\pr_1}{{\state}_1}) \leq \nu(\cvec{\pr_2}{{\state}_2})$.
-Therefore,  we consider  two cases:
+Therefore,  it remains to examine whether the last finalized configuration witnessed by $\pr_2$ appears before or after $c_1$, i.e.:
 $(a)$ $\mu(\cvec{\pr_2}{\state_2}) \leq \nu(\cvec{\pr_1}{{\state}_1})$ and 
 $(b)$ $\mu(\cvec{\pr_2}{\state_2}) > \nu(\cvec{\pr_1}{{\state}_1})$.
-Let for appreviation denote by $\mu_i = \mu(\cvec{\pr_i}{\state_i})$, 
-and $\nu_i = \nu(\cvec{\pr_i}{\state_i})$.
+% Let for appreviation denote by $\mu_i = \mu(\cvec{\pr_i}{\state_i})$, 
+% and $\nu_i = \nu(\cvec{\pr_i}{\state_i})$.
 
 \vspace{1em}
 
 \noindent{\textbf{Case $(a)$:}} Since $\op_1\bef\op_2$
 %operation $\pi_2$ is invoked after $\pi_1$ completes 
-then, by Lemma \ref{lem:prefix}, $\cvec{\pr_2}{\state_2}$ value returned
+then, by Theorem \ref{thm:recon:properties}, $\cvec{\pr_2}{\state_2}$ value returned
 by $\act{read-config}$ at $p_2$ during the execution of $\pi_2$ satisfies $\cvec{\pr_1}{\state_1}  \preceq_p \cvec{\pr_2}{\state_2}$. 
 %
-Therefore, $\nu(\cvec{\pr_1}{{\state}_1})  \leq \nu(\cvec{\pr_2}{{\state}_2})$, and in this case 
+Therefore, $\nu(\cvec{\pr_1}{{\state}_1})  \leq \nu(\cvec{\pr_2}{{\state}_2})$, and hence in this case 
 $\mu(\cvec{\pr_2}{\state_2}) \leq \nu(\cvec{\pr_1}{{\state}_1})  \leq \nu(\cvec{\pr_2}{{\state}_2})$. 
 Since $c_1$ is the last configuration in $\cvec{\pr_{1}}{\state_1}$, then it has index $\nu(\cvec{\pr_1}{{\state}_1})$.
 So if we take $c_2 = c_1$ then the $c_1.\act{put-data}(\tup{\tg{\op_1}, v_{\op_1}})$ action trivially 
-satisfies both conditions as: (i) it completes in state $\state_1$ which appears before $\state_2$, and
+satisfies both conditions of the lemma as: (i) it completes in state $\state_1$ which appears before $\state_2$, and
 (ii) it puts a pair $\tup{\tg{}, v}$ such that $\tg{}=\tg{\op_1}$. 
 %if $\pi_2$ is either a  write or a read operation then   $\act{get-tag}$  or $\act{get-data}$   is called on each configuration 
 %  $\cvec{p_2}{\sigma_2}[i]$ for $ \mu(\cvec{p_2}{\sigma_2}) \leq i \leq \nu(\cvec{p_2}{\sigma_2})$ .  Note that 
@@ -154,7 +178,7 @@ satisfies both conditions as: (i) it completes in state $\state_1$ which appears
 %  then by Definition~\ref{def:consistency} and because $\act{put-data}$ corresponding to  $\sigma_1$ at $p_1$ completes before $\act{get-tag}$ or $\act{get-data}$ the claim of the lemma holds.  
   \vspace{1em}
   
-\noindent{\textbf{Case $(b)$:}} Note that there exists a reconfiguration client $\rec$ that invokes $\act{reconfig}$ operation $\rho$, 
+\noindent{\textbf{Case $(b)$:}} This case is possible if there exists a reconfiguration client $\rec$ that invokes $\act{reconfig}$ operation $\rho$, 
 %say corresponding to some reconfiguration operation $\rho$,  that 
 during which it executes the 
 $\act{finalize-config}( \cvec{\rec}{*})$ that finalized configuration with index 
@@ -193,11 +217,15 @@ Let $\state$ be the state immediately after the $\act{read-config}$ of $\rho$. N
   and hence $\mu(\cvec{\rec}{\state_{\rho}'})\leq\nu(\cvec{p_1}{\sigma_1}) $.
   Therefore,  $\rho$ executes $\act{get-data}$ in configuration $\config{\cvec{\rec}{\state_{\rho}'}[j]}$ for 
   $j = \nu(\cvec{p_1}{\state_1}) $. Since $\pr_1$ invoked $\act{put-data}(\tup{\tg{\op_1},v_{\op_1}})$ 
-  at the same configuration $\nu^c(\cvec{p_1}{\state_1})$, and completed in a state $\state_1$ before $\state_{\rho}'$, then by property
-  \textbf{C1} of Definition~\ref{def:consistency}, it follows that the $\act{get-data}$ action will 
+  at the same configuration $c_1$, 
+  %$\nu^c(\cvec{p_1}{\state_1})$, 
+  and completed in a state $\state_1$ before $\state_{\rho}'$, then by
+  \textbf{C1} of Property~\ref{property:dap}, 
+  it follows that the $\act{get-data}$ action will 
   return a tag $\tg{}\geq \tg{\op_1}$. Therefore, the maximum tag that $\rho$ discovers is 
   $\tg{max}\geq\tg{}\geq\tg{\op_1}$. Before invoking the $\act{finalize-config}$ action, $\rho$ 
-  invokes $\nu^c(\cvec{\rec}{\state_{\rho}'}).\act{put-data}(\tup{\tg{max}, v_{max})}$. Since 
+  invokes %$\nu^c(\cvec{\rec}{\state_{\rho}'}).\act{put-data}(\tup{\tg{max}, v_{max})}$
+  $c_1.\act{put-data}(\tup{\tg{max}, v_{max})}$. Since 
   $\nu(\cvec{\rec}{\state_{\rho}'})= \mu(\cvec{p_2}{\state_2})$, and since by Lemma \ref{lem:unique},
   then the action $\act{put-data}$ is invoked in a configuration $c_2 = \config{\cvec{p_2}{\sigma_2}[j]}$ 
   such that $j=\mu(\cvec{p_2}{\sigma_2})$. Since the $\act{read-config}$ action of $\op_2$ 
@@ -223,6 +251,9 @@ Note that there are finite number of operations  invoked in $\EX$  before $\pi_2
    %
 \end{proof}
 
+The following lemma shows the consistency of operations as long as the DAP used satisfy 
+Property~\ref{property:dap}. %properties \textbf{C1} and \textbf{C2}.
+
 \begin{lemma} %{\bf \ref{dap:C1:C2}} 
 	 Let $\op_1$ and $\op_2$ denote completed read/write operations in an execution $\EX$, from processes $\pr_1,\pr_2\in\idSet$ respectively, such that $\op_1\bef\op_2$. If $\tg{\op_1}$ and $\tg{\op_2}$ are the 
 	local tags at $\pr_1$ and $\pr_2$ after the completion of $\op_1$ and $\op_2$ respectively, then $\tg{\op_1} \leq \tg{\op_2}$; if $\op_1$ is a write operation then $\tg{\op_1}  < \tg{\op_2}$.
@@ -239,8 +270,8 @@ Note that there are finite number of operations  invoked in $\EX$  before $\pi_2
 		$\mu(\cvec{\pr_2}{\state_2})\leq j \leq \nu(\cvec{\pr_2}{\state_2})$, that completes in some state 
 		$\state'$ that appears before $\state_2$ in $\EX$. Thus, the $\act{get-data}$ or $\act{get-tag}$ 
 		invoked by $\pr_2$ on $\config{\cvec{\pr_2}{\state_2}[j]}$, occurs after state $\state_2$ and thus
-		after $\state'$. Since the DAP primitives used satisfy properties \textbf{C1} and \textbf{C2} of 
-		Definition \ref{def:consistency}, then the $\act{get-tag}$ action will return a tag $\tg{\op_2}'$ 
+		after $\state'$. Since the DAP primitives used satisfy \textbf{C1} and \textbf{C2} of 
+		Property \ref{property:dap}, then the $\act{get-tag}$ action will return a tag $\tg{\op_2}'$ 
 		or a $\act{get-data}$ action will return a pair $\tup{\tg{\op_2}', v_{\op_2}'}$, with $\tg{\op_2}'\geq\tg{}$.
 		As $\pr_2$ gets the maximum of all the tags returned, then by the end of the loop 
 		$\pr_2$ will retrieve a tag $\tg{max}\geq\tg{\op_2}'\geq\tg{}\geq\tg{\op_1}$.
@@ -254,7 +285,7 @@ Note that there are finite number of operations  invoked in $\EX$  before $\pi_2
 
 %\subsection*{ \ref{ssec:liveness} \ares{} Liveness}
 %\input{ssec-correct-liveness.tex}
-
+And the main result of this section follows:
 
 \begin{theorem}[Atomicity]
 	In  any execution $\EX$ of \ares{}, if in every configuration $c\in\gseq$,
@@ -268,6 +299,9 @@ Note that there are finite number of operations  invoked in $\EX$  before $\pi_2
 
 %In  \ares{},  each configuration 
 %may implement the DAPs in a different way as stated below:
+As algorithm \ares{} handles each configuration separately, then we can observe that the algorithm
+may utilize a different mechanism for the put and get primitives in each configuration. So the 
+following remark:
 
 \begin{remark}
 	Algorithm \ares{} satisfies atomicity even when the implementaton of the  DAPs in two 
