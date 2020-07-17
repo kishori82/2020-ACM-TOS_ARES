@@ -1,0 +1,226 @@
+
+\algblockdefx[Receiv]{Receiv}{EndReceiv}%
+[3]{{\bf Upon recv} (#1)$_{\text{ #2 }}${\bf from} #3}%
+{{\bf end receive}} 
+In this section, we provide an optimization on the reconfiguration process presented in \ares{}. 
+%show that \treas{} can be 
+In particular, we discuss how to reduce the communication overhead caused by the state transfer during the transition from a \emph{finalized} to a \emph{newly installed} configuration, by 
+%adapt \ares{} to 
+allowing servers to exchange directly object values,
+and avoiding the recon client intervention.
+%reconfiguration where the object values are transferred directly
+%from the servers a \emph{finalized} configuration,  to the servers of a \emph{newly installed} configuration, 
+% and without the recon client handling object values.
+% This will  caused by the state transfer, as object state will be transferred from server to server without the intervention from a recon client. 
+%
+According to \ares{} a recon client is required to 
+collect the object values from the servers of the old
+configuration and pass those object values over to the servers 
+of the new configuration. With the proposed optimization, the recon client will first determine the
+newly establish configuration and will inform the
+servers of the old configuration to forward their 
+object values to the servers of the new configuration.
+
+To reach this goal, we modified the \act{update-config} procedure of the reconfiguration service, as well as 
+%the changes needed to be applied to 
+the protocol of the servers for allowing them to communicate the object values, as seen in Algs.~\ref{algo:reconfigurer:statetransfer:ares} and ~\ref{algo:server:statetransfer:treas}.
+%to both the reconfiguration and the DAP implementation in \ares{}. 
+%necessary to adapt \ares{} and \treas{} to achieve this. 
+%Here every configuration uses \treas{} as the underlying atomic memory emulation algorithm, and  we refer to  this algorithm as \aresII{}.
+%
+%In \ares
+
+ 
+
+
+
+More precisely, the procedure \act{update-config} (see Alg.~\ref{algo:reconfigurer}) is modified  as shown in 
+Alg.~\ref{algo:reconfigurer:statetransfer:ares}. Consider a reconfiguration client $rc$, which invokes \act{update-config}, 
+during a reconfiguration operation, where it iteratively gathers the tag-config ID pairs in the set variable $M$ by calling \act{get-tag} 
+(lines Alg.~\ref{algo:reconfigurer:statetransfer:ares}: \ref{line:statetransfer:reconfig:start}-\ref{line:statetransfer:reconfig:end}). Suppose $\tup{\tau, C}$ is the tag and 
+configuration ID pair corresponding to the highest tag 
+in $M$ (lines Alg.~\ref{algo:reconfigurer:statetransfer:ares}:\ref{line:reconfig:max}). 
+Next, $rc$ executes procedure  $\act{forward-code-element}(\text{{\sc req-fw-code-elem}}, \tau, C, C')$, 
+ to send a request to the servers in $C$ to forward their respective 
+coded elements corresponding to $\tau$, to  each server in   $\servers{C'}$.
+% via  the call to the procedure 
+%$\act{forward-code-element}(\text{{\sc req-fw-code-elem}}, \tau, C, C')$. 
+Suppose the MDS code parameters in $C$ and $C'$ are $[n, k]$ and $[n', k']$, respectively, such that, $|\servers{C}| = n$, 
+$|\servers{C'}| = n'$, and for some $k \geq \frac{2n}{3}$  and $k'\geq \frac{2n'}{3}$. In $\act{forward-code-element}$, 
+the call to $\act{md-primitive}( \text{\sc req-fw-code-elem}, \tg{}, C')$, presented in ~\cite{KPKLMS16},  delivers the message 
+({\sc req-fw-code-elem}, $\tg{}, C'$) 
+to  either every non-faulty servers in $\servers{C}$ or  none. 
+
+We rely on the  semantics of \act{md-primitive}~\cite{KPKLMS16} to avoid lingering of  coded elements for ever in 
+$D$ due to crash failure of the $rc$, or servers in $\servers{C}$. For example, suppose  $rc$ communicates only to one server, say  $s_i$,  in $\servers{C}$ and crashes, then the rest of the servers in $C$ would not send their coded elements to the servers in $C'$. As a result, the coded element from $s_i$ will linger around in the  $D$ variables in the  servers in $\servers{C'}$ without ever being removed, thereby, progressively  increasing the storage cost.  
+%
+{\bf [NN: i cannot follow the next sentence. How does it solve the issue described in the previous sentens?]}Upon delivering these messages to any server $s_i$, in $\servers{C}$, 
+ if   $(\tau, e_i)$ in $List$ in $s_i$,
+%--possibly due to another ongoing reconfiguration, or $k'$ coded elements for $\tau$ have already arrived at $s_j'$--
+ %\nn{[NN: How this is possible? When the server added this tag? These are the servers of the new config right?]} 
+ then $s_i$ sends   $(\text{\sc fwd-code-elem}, \tup{\tg{}, e_i}, rc)$ to servers in $C'$. 
+
+{\bf[NN: the paragraph below is a bit difficult to follow]}
+Next upon receiving any of the  {\sc fwd-code-elem} messages, at any server $s'_j$ in $\servers{C'}$  if $rc \in Recons$ in  $s'_j$
+(Alg.~\ref{algo:server:statetransfer:treas}:\ref{line:statetransfer:notify:check}) then it  ignores it because $rc$ has already been updated by $s'_j$ regarding the object value of $\tau$. Otherwise, $s'_j$ checks if $\tup{\tg, e_j} \in List$ (Alg.~\ref{algo:server:statetransfer:treas}:\ref{line:statetransfer:notify:checkList}), if is not, then $s'_j$ adds the incoming  pair
+ $\tup{\tau, e_i}$ to $D$.
+ Next,  $s'_j$ checks  if  the value for $\tau$ is decodable (Alg.~\ref{algo:server:statetransfer:treas}:\ref{line:statetransfer:notify:decodable}), from the coded elements in $D$, if it is,  then $s'_j$ decodes the value 
+ $v$, using decoder for $C'$, with parameters $[n, k]$, and re-encodes, according to parameters $[n', k']$ to get $e_j' \equiv \Phi_{C'}(v)_j$. 
+ Then $s'_j$  proceeds to store $\tup{\tau, e_j'}$
+   in a similar steps as in the \act{put-data} response in the \treas{} (Alg.~\ref{algo:server:statetransfer:treas}). 
+   Then in lines  Alg.~\ref{algo:server:statetransfer:treas}:\ref{line:statetransfer:notify:begin}-\ref{line:statetransfer:notify:end} if 
+   $\tup{\tg{}, *} \in List$
+   then  $s'_j$ adds $rc$ to the  list $Recons$ and $s_j'$ sends $rc$ an {\sc ack}. Finally, once $rc$ receives {\sc ack}s 
+   from  $\left\lceil \frac{n' + k'}{2}\right\rceil$ servers in $\servers{C'}$ it completes the call to \act{update-config}.  
+   Finally, it can be shown that 
+   %\aresII{} 
+   the updated implements an atomic memory service as stated in the following theorem.
+%\nn{[NN:Is $t$ and $\tau$ the same in the algorithms?]}
+\begin{algorithm}[!h]
+	%\hrule \F
+	\begin{algorithmic}[2]
+		\begin{multicols}{2}{\scriptsize				
+				\Procedure{update-config}{$seq$}
+				\State $\mu\gets\max(\{j: seq[j].status = F\})$
+				\State $\nu\gets |seq|$ 
+				
+				\State $M \gets \emptyset$
+
+				\For{$i=\mu:\nu$}\label{line:statetransfer:reconfig:start}
+				\State  \sout{$t  \gets \dagetdata{\config{seq[i]}}$} 
+				\State  $t  \gets \dagettag{\config{seq[i]}}$
+				\Statex
+				\State \sout{$M  \gets M \cup  \{ \tup{\tg{}, v} \}$} 
+				\State $M  \gets M \cup  \{ \tup{t, \config{seq[i]}  } \}$ \label{line:statetransfer:reconfig:end}
+				\EndFor
+				\Statex
+			        \State \sout{$\tup{\tg{},v} \gets \max_{t} \{ \tup{t, v}: \tup{t, v} \in M\}$}
+				\State  $\tup{\tg{},C} \gets \max_{t} \{ \tup{t, cfg}: \tup{t, cfg} \in N\}$ \label{line:reconfig:max}
+				%\State $\tup{\tg{},v} \gets \text{\act{get-data}}(cseq, \mu, \nu)$
+				\Statex
+				\Statex ~~~~~/* $ C' \equiv seq[\nu])$ */ 
+                                     \State  \sout{$C'.\act{put-data}(\tup{\tg{},v})$} 
+                                     \State forward-code-element$(\tg, C, C')$
+			
+				\EndProcedure
+				\Statex
+				\Procedure{forward-code-element}{  $\tg{}, C, C'$}
+			        \State  Call \act{md-primitive} $( \text{\sc req-fw-code-elem}, \tg{}, C')$ on servers in $C$
+				%\State Await {\sc ack}  from a quorum in $C$
+				\State {\bf until}  {\sc ack} from $\left\lceil \frac{n' + k'}{2}\right\rceil$ servers in $\servers{C'}$
+				\EndProcedure
+		}\end{multicols}	
+	\end{algorithmic}
+	%\hrule \B
+	\caption{Alternate \act{update-config} for the  reconfiguration protocol of  \ares.}
+	\label{algo:reconfigurer:statetransfer:ares}
+	\vspace{-1em}
+\end{algorithm}
+\begin{algorithm}[!ht]
+	%\hrule \F
+	\begin{algorithmic}[2]
+		\begin{multicols}{2}{\scriptsize
+			\State at each server $s_i$ in any configuration 
+			\State{\bf Additional State Variables:}
+			\Statex $D \subseteq  \mathcal{T} \times \mathcal{C}_s$, initially   $\{(t_0, \Phi_i(v_0))\}$
+			\State $Recons$,  set of reconfig client ids, initially empty
+			%\State  $\tg{}\in\N \times\wSet$, initially, $\tup{0,\bot}$
+
+			%\State  $msgType\in\{~seen\subseteq\mathcal{V}\cup\{w\}$	
+			%\State{\bf Initialization:}
+			%\State $\tg{}\gets \tup{0,\bot}, v \gets \bot$
+			
+			\Statex
+			\Statex /*$s_i$ in configuration $C$ */
+			\Receiv{{\sc req-fw-code-elem}$, t, C'$}{$s_i$}{$rc$}
+			\If{  $(t, e_i) \in List$ }
+                                \State Send $(\text{\sc fwd-code-elem}, \tup{\tg{}, e_i}, rc)$ to servers in $C'$
+                             \EndIf
+			\EndReceiv
+			
+			\Statex
+		%\Statex\Statex\Statex
+		%	\Statex\Statex\Statex\Statex
+			\Statex /*$s_j'$ in configuration $C'$ */		
+			\Receiv{{\sc fwd-code-elem}, $\tup{\tg{},e_i}, rc$}{$s_j'$}{$s_i$}
+			
+			   \If {$rc \not\in Recons$ } \label{line:statetransfer:notify:check}
+			         \If{ $(t, *) \not\in List$} \label{line:statetransfer:notify:checkList}
+			               \State $D \gets D \cup \{   \tup{t, e_i}\}$
+			               \If{ $\act{isDecodable}(D, t)$} \label{line:statetransfer:notify:decodable}
+			                     \State $v \gets \act{decode}(D, t)$ with $\Phi^{-1}_C$
+			                       \State $D \gets D \setminus \{   \tup{t, e_i}\} \cup  \{   \tup{t, \bot}\} $
+			                     \State $e_j' \gets \Phi_{C'}(v)_j$
+				\State $List \gets List \cup \{ \tup{\tg{}, e_j}  \}$ 
+				\If{$|List| > \delta+1$}
+					\State $\tg{min}\gets\min\{t: \tup{t,*}\in List\}$
+                                              \Statex  ~~~~~~~~~~~~~~~~~~~/* remove the coded value, keep the tag */ 
+					\State $List \gets List \backslash\{\tup{\tg{},e}: \tg{}=\tg{min} \wedge$
+					\Statex ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$\tup{\tg{},e}\in List\} \cup \{  (  \tg{min}, \bot)  \}$
+				
+									%\State $List \gets List \backslash\{\tup{\tg{},e}: \tg{}=\tg{min} ~\wedge~\tup{\tg{},e}\in List\} \cup \{  (  \tg{min}, \bot)  \}$
+				%					\State $List \gets List \backslash\{\tup{\tg{},e}: \tg{}=\tg{min} ~\wedge~\tup{\tg{},e}\in List\} \cup \{  (  \tg{min}, \bot)  \}$						
+				\EndIf
+				
+				 \EndIf
+                                        \EndIf
+				                  
+				    \If{ $(t, *) \in List$}     \label{line:statetransfer:notify:begin}        
+				                      \State $Recon \gets Recons \cup \{ rc\}$
+				                      \State Send ACK to $rc$  \label{line:statetransfer:notify:end}
+				     \EndIf
+	                   \EndIf
+			\EndReceiv
+%			\Statex	
+%			
+%			\Receive{{\sc query-tag}}{$s_i,c_k$} %\Comment{Called upon reception of a message}
+%				\State $\act{handle-get-tag(c_k)}$
+%				%\State send $\tg{}$ to $q$
+%			\EndReceive
+%			
+%			\Statex
+%			
+%			\Receive{{\sc query}}{$s_i,c_k$}
+%				\State $\act{handle-get-data(c_k)}$
+%				%\State send $\tup{\tg{}, v}$ to $q$
+%			\EndReceive
+%			
+%			\Statex
+%			
+%			\Receive{{\sc write}, $\tup{\tg{in}, v_{in}}$}{$s_i,c_k$}
+%				\State $\act{handle-put-data(c_k)}$
+%%				\If {$\tg{in}> \tg{}$} 	\label{line:server:tg-comparison}
+%%					\State  $\tup{\tg{},v}\gets \tup{\tg{in},v_{in}}$ \label{line:server:update}
+%%				\EndIf
+%%				\State  send  {\sc ack} to $q$ 	\label{line:server:reply}
+%			\EndReceive
+%			
+		}\end{multicols}	
+	\end{algorithmic}
+	%\hrule \B
+	\caption{Additional server protocol and state-variable at a server in  \treas.}
+	\label{algo:server:statetransfer:treas}
+	\vspace{-1em}
+\end{algorithm}
+
+\begin{theorem}[Atomicity]\label{safety:ares:treas}
+	Algorithm \ares-\treas{} implements a reconfigurable atomic storage service, if 
+	$\act{get-data}$, $\act{get-tag}$, and $\act{put-data}$ primitives used satisfy 
+	\textbf{C1} and \textbf{C2}  of Definition \ref{def:consistency}.
+\end{theorem}
+
+%\begin{theorem}
+%State when it is live
+%\end{theorem}
+
+
+
+
+
+
+
+
+
+
+
+
